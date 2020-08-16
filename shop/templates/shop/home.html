@@ -1,0 +1,26 @@
+{% extends 'shop/base.html' %}
+{% block content %}
+
+<nav class="nav nav-pills flex-column flex-sm-row">
+  <a class="flex-sm-fill text-sm-center nav-link active" href="#">Specials</a>
+  <a class="flex-sm-fill text-sm-center nav-link" href="#">Mains</a>
+  <a class="flex-sm-fill text-sm-center nav-link" href="#">Soups</a>
+  <a class="flex-sm-fill text-sm-center nav-link" href="#">Fast food</a>
+</nav>
+<br>
+
+{% for menu in dish %}   
+    <article class="media content-section">
+        <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="#">{{ menu.name }}</a>
+                <small class="text-muted">{{ menu.ingredient }}</small>
+            </div>
+            
+            <p class="article-content">Price: {{ menu.price }}zł</p>
+        </div>
+    </article>
+{% endfor %}
+
+{% endblock content %}
+
