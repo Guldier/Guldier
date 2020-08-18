@@ -8,6 +8,9 @@ class Dish(models.Model):
     price = models.FloatField()
     dish_type = models.CharField(max_length=20)
 
+    def __str__(self):
+        return f'{self.name}'
+
 class Orders(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
