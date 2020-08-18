@@ -1,19 +1,12 @@
 from django.shortcuts import render
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Dish
 
-menu = [
-    {'name': 'Danie dnia',
-    'ingredient': 'Kurczak',
-    'price': '16'
-    },
-    {'name': 'Zupa dnia',
-    'ingredient': 'Pomidorowa',
-    'price': '5'
-    }    
-]
 
 def home (request):
     context = {
-        'dish': menu,
+        'dish': Dish.objects.all(),
         'title': 'Home'
     }
     return render(request, 'shop/home.html',context)

@@ -15,9 +15,11 @@
             <div class="article-metadata">
                 <a class="mr-2" href="#">{{ menu.name }}</a>
                 <small class="text-muted">{{ menu.ingredient }}</small>
-            </div>
-            
-            <p class="article-content">Price: {{ menu.price }}zł</p>
+                <small class="article-content" style='color:#0074d9'>Price: {{ menu.price }}zł</small>
+            </div>            
+            {% if user.is_authenticated %}
+                <a class="btn btn-primary" style="color:white" href="#"> Add to chart</a>
+            {% endif %}
         </div>
     </article>
 {% endfor %}
