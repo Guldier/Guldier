@@ -2,7 +2,8 @@
 {% block content %}
 
 <nav class="nav nav-pills flex-column flex-sm-row">
-  <a class="flex-sm-fill text-sm-center nav-link active" href="#">Specials</a>
+  <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-home' %}">All</a>
+  <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-home' %}">Specials</a>
   <a class="flex-sm-fill text-sm-center nav-link" href="#">Mains</a>
   <a class="flex-sm-fill text-sm-center nav-link" href="#">Soups</a>
   <a class="flex-sm-fill text-sm-center nav-link" href="#">Fast food</a>
@@ -10,6 +11,7 @@
 <br>
 
 {% for menu in dish %}   
+   
     <article class="media content-section">
         <div class="media-body">
             <div class="article-metadata">
@@ -20,6 +22,7 @@
             <p class="article-content">Price: {{ menu.price }}zł</p>
         </div>
     </article>
+     
 {% endfor %}
 
 {% endblock content %}
