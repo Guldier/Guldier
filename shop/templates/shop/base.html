@@ -62,13 +62,15 @@
             <div class="col-md-4">
                 {% if user.is_authenticated %}
                     <div class="content-section">
-                        <h3>Our Sidebar</h3>
-                        <p class='text-muted'>You can put any information here you'd like.
-                            <ul class="list-group">
-                                <li class="list-group-item list-group-item-light">Latest Posts</li>
-                                <li class="list-group-item list-group-item-light">Announcements</li>
-                                <li class="list-group-item list-group-item-light">Calendars</li>
-                                <li class="list-group-item list-group-item-light">etc</li>
+                        <h3>Cart</h3>
+                            <ul class="list-group list-group-flush">
+                                <span class="badge badge-primary d-flex align-items-center"> item 1 <button>-</button><button>+</button> 15 zł </span>
+                                <br>
+                                <span class="badge badge-primary"> item 1 <button>-</button><button>+</button></span>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center">Total:
+                                <span class="badge badge-primary badge-pill">14</span> zł
+                                </li>
                             </ul>
                         </p>
                     </div>

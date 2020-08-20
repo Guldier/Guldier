@@ -45,12 +45,24 @@
     <article class="media content-section">
         <div class="media-body">
             <div class="article-metadata">
-                <a class="mr-2" href="#">{{ menu.name }}</a>
-                <small class="text-muted">{{ menu.ingredient }}</small>
+                <a class="mr-2" href="{% url 'shop-open-dish' menu.id %}">{{ menu.name }}</a><br>
+                <small class="text-muted">{{ menu.ingredient }}</small><br>
                 <small class="article-content" style='color:#0074d9'>Price: {{ menu.price }}zł</small>
-            </div>            
+            </div> 
             {% if user.is_authenticated %}
-                <a class="btn btn-primary" style="color:white" href="#"> Add to chart</a>
+                {% if addon %}
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect01">Options</label>
+                        </div>
+                        <select class="custom-select" id="inputGroupSelect01">
+                            {% for add in addon %}
+                                <option selected>{{ add.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>    
+                    <a class="btn btn-primary" style="color:white" href="#"> Add to chart</a>
+                {% endif %}
             {% endif %}
         </div>
     </article>
