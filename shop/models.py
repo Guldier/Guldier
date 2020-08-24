@@ -7,6 +7,7 @@ class Dish(models.Model):
     ingredient = models.CharField(max_length=250)
     price = models.FloatField()
     dish_type = models.CharField(max_length=20)
+    dish_addon = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.name}'
@@ -22,6 +23,7 @@ class AddOn(models.Model):
 class Composition(models.Model):
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
     addon = models.ForeignKey(AddOn, on_delete=models.CASCADE)
+    price = models.FloatField()
 
     def __str__(self):
         return f'{self.dish} + {self.addon}'
@@ -31,6 +33,14 @@ class Orders(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     composition = models.ForeignKey(Composition, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f'{self.user} + {self.composition}'
+    
+
 class Chart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     composition = models.ForeignKey(Composition, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} + {self.composition}'
+    

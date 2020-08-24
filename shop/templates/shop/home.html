@@ -8,6 +8,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
     {% endif %}
     {% if type == 'special' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -15,6 +16,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
     {% endif %}
     {% if type == 'main' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -22,6 +24,7 @@
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'main'%}">Mains</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
     {% endif %}
     {% if type == 'soup' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -29,6 +32,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
     {% endif %}
     {% if type == 'fastfood' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -36,6 +40,15 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+    {% endif %}
+    {% if type == 'pizza' %}
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'special'%}">Specials</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
     {% endif %}
   
 </nav>
@@ -52,16 +65,23 @@
             {% if user.is_authenticated %}
                 {% if addon %}
                     <div class="input-group mb-2">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="inputGroupSelect01">Options</label>
-                        </div>
-                        <select class="custom-select" id="inputGroupSelect01">
-                            {% for add in addon %}
-                                <option selected>{{ add.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>    
-                    <a class="btn btn-primary" style="color:white" href="#"> Add to chart</a>
+                        
+                        <div class="container-fluid">
+                            <form action="{% url 'shop-add-cart' menu.id %}">
+                                {% if menu.dish_addon %}
+                                    <div class="input-group-prepend">
+                                        <label class="input-group-text" for="inputGroupSelect01">Options</label>
+                                    </div>
+                                    <select class="custom-select" name="addon_select">
+                                        {% for add in addon %}
+                                            <option value="{{ add.id }}">{{ add.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
+                                <input type="submit" value="Add to cart" class="btn btn-primary">
+                        </form>
+                       </div>
+                    </div>
                 {% endif %}
             {% endif %}
         </div>

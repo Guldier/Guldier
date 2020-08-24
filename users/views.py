@@ -21,6 +21,7 @@ def register(request):
 @login_required
 def profile(request):
     context  = {
-        'users_log': Profile.objects.filter(user = request.user).exists()
+        'users_log': Profile.objects.filter(user = request.user).exists(),
+        'profile_view': True
     }
     return render(request, 'users/profile.html', context)

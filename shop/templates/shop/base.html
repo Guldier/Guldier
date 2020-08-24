@@ -56,24 +56,36 @@
             {% endfor %}
         {% endif %}
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 {% block content %}{% endblock %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
                 {% if user.is_authenticated %}
-                    <div class="content-section">
-                        <h3>Cart</h3>
-                            <ul class="list-group list-group-flush">
-                                <span class="badge badge-primary d-flex align-items-center"> item 1 <button>-</button><button>+</button> 15 zł </span>
-                                <br>
-                                <span class="badge badge-primary"> item 1 <button>-</button><button>+</button></span>
+                    {% if not profile_view%}
+                        <div class="content-section" wrap="soft";>
+                            <h3>Cart</h3>
+                                <ul class="list-group list-group-flush">
+                                    {% for item in cart %}
+                                        <span class="badge badge-primary">{{ item.composition }} - {{item.composition.price}} zł
+                                            <a class="badge badge-light" href="{% url 'shop-delete-from-cart' item.id %}">
+                                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z"/>
+                                                </svg>   
+                                            </a>
+                                        </span>
+                                        <br>
+                                    {% endfor %}                                
 
-                                <li class="list-group-item d-flex justify-content-between align-items-center">Total:
-                                <span class="badge badge-primary badge-pill">14</span> zł
-                                </li>
-                            </ul>
-                        </p>
-                    </div>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">Total:
+                                        <span class="badge badge-primary badge-pill">{{sum_price}}</span> zł
+                                    </li>
+                                    <div class="text-center">
+                                        <button class="btn btn-primary btn-lg btn-block"> Order </button>
+                                    </div>
+                                </ul>
+                            </p>
+                        </div>
+                    {% endif %}
                 {% endif %}                
             </div>
         </div>
