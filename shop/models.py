@@ -32,15 +32,17 @@ class Orders(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     composition = models.ForeignKey(Composition, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
 
     def __str__(self):
-        return f'{self.user} + {self.composition}'
+        return f'{self.user} + {self.composition} - {self.quantity}szt.'
     
 
-class Chart(models.Model):
+class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     composition = models.ForeignKey(Composition, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return f'{self.user} + {self.composition}'
+        return f'{self.user} + {self.composition} - {self.quantity}szt.'
     

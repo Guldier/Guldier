@@ -1,0 +1,74 @@
+{% extends 'shop/base.html' %}
+{% block summary %}
+{% load django_template_maths %}
+
+    <div class="container">
+       <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Item title</th>
+                <th scope="col">Price</th>
+                <th scope="col" style="text-align:center">Quantity</th>
+                <th scope="col"></th>
+                <th scope="col">Total Item Price</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for item in orders %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ item.composition}}</td>
+                        <td>{{ item.composition.price }}</td>
+                        <td style="text-align:center">
+                                               
+                            <a href="#" style="color:black">
+                                {% if  item.quantity > 1%}
+                                    <a href="{% url 'shop-remove-summary' item.composition.id%}">
+                                        <button type="button" class="btn btn-primary btn-xs" style="padding: 3px 3px">-</button>
+                                    </a>
+                                {% else %}
+                                    <button type="button" class="btn btn-primary btn-xs" style="padding: 3px 3px" disabled></button>
+                                {% endif %}
+                            </a>
+                                <a>{{ item.quantity }}</a>
+                            <a href="{% url 'shop-add-summary' item.composition.id%}" style="color:black">
+                                <button type="button" class="btn btn-primary btn-xs" style="padding: 3px 3px">+</button>
+                            </a>
+                        </td>
+                        <td>
+                            {{ order_item.get_total_price}}
+                            <a href="{% url 'shop-delete-from-cart-summary' item.id%}">
+                                <button type="button" class="btn btn-primary btn-xs" style="padding: 4px">x</button>
+                            </a>
+                        </td>
+                        <td>                        
+                        </td>
+                    </tr>   
+                {% empty %}
+                    <tr>
+                        <td colspan='5'>Your cart is empty</td>
+                    </tr>         
+                {% endfor %}
+                <tr>
+                    <td colspan="5"><b></b></td>
+                    <td><b>{{ total_price }}zl</b></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        {% if user.profile.money %}
+                            <a style="color:red">Your money after order: </a>
+                        {% else %}
+                            <a>Your money after buy: </a>
+                        {% endif %}
+                    </td>
+                    <td colspan="5">
+                        <a class='btn btn-warning float-right ml-2' href="#">Order</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+{% endblock summary %}

@@ -8,7 +8,7 @@ from .models import (
     Dish, 
     AddOn,
     Composition,
-    Chart
+    Cart
 )
 
 from users.models import (
@@ -17,21 +17,35 @@ from users.models import (
 
 title = 'Home'
 
-def home (request):
-    items_in_cart = Chart.objects.filter(user=request.user.id)
+def countTotalPrice(user):
+    items_in_cart = Cart.objects.filter(user=user)
     total_price = 0
     for item in items_in_cart:
-        total_price += item.composition.price
+        total_price += item.composition.price * item.quantity
         if item.composition.addon.name == 'empty':
             item.composition.addon.name = ' '
-        
+    
+    value_to_return ={
+        'total_price': total_price,
+        'items_in_cart': items_in_cart
+    }
+    return value_to_return
+    
+
+def home (request):
     context = {
         'dish': Dish.objects.all(),
         'title': title,
-        'type': 'all',
-        'cart': items_in_cart,
-        'sum_price': total_price
+        'type': 'all'
     }
+    try:
+        values = countTotalPrice(request.user)    
+        context.update({'cart': values["items_in_cart"], 'sum_price': values["total_price"]}) 
+        money = Profile.objects.get(user=request.user).money
+        context.update({'money': money})
+    except:
+        pass    
+
     return render(request, 'shop/home.html',context)
 
 
@@ -43,37 +57,35 @@ def select_type(request, type):
     if type == "all":
        return redirect('shop-home')
     else:
-        items_in_cart = Chart.objects.filter(user=request.user.id)
-        total_price = 0
-        for item in items_in_cart:
-            total_price += item.composition.price
-            if item.composition.addon.name == 'empty':
-                item.composition.addon.name = ' '
-        
-        context ={
+        context = {
             'dish':Dish.objects.filter(dish_type = type),
             'title': title,
-            'type': type,
-            'cart': items_in_cart,
-            'sum_price': total_price
-        } 
+            'type': type
+        }
+
+        try:
+            values = countTotalPrice(request.user)    
+            context.update({'cart': values["items_in_cart"], 'sum_price': values["total_price"]}) 
+            money = Profile.objects.get(user=request.user).money
+            context.update({'money': money})
+        except:
+            pass    
         return render(request, 'shop/home.html',context)
 
 def open_dish(request, dish):
-    items_in_cart = Chart.objects.filter(user=request.user.id)
-    total_price = 0
-    for item in items_in_cart:
-        total_price += item.composition.price
-        if item.composition.addon.name == 'empty':
-            item.composition.addon.name = ' '
-
     context = {
         'dish': Dish.objects.filter(id=dish),
         'titele': title,
         'addon': AddOn.objects.filter(addon_type='first'),
-        'cart': items_in_cart,
-        'sum_price': total_price
     }
+    try:
+        values = countTotalPrice(request.user)    
+        context.update({'cart': values["items_in_cart"], 'sum_price': values["total_price"]}) 
+        money = Profile.objects.get(user=request.user).money
+        context.update({'money': money})
+    except:
+        pass    
+
     return render(request, 'shop/home.html', context)
 
 @login_required 
@@ -98,11 +110,7 @@ def add_to_cart(request, dish):
         messages.warning(request,'Need to feed your account')
         return redirect('shop-home')
     #sprawdzenie zawartosci koszyka
-    items_in_cart = Chart.objects.filter(user=request.user.id)
-    total_price = 0
-    for item in items_in_cart:
-        total_price += item.composition.price
-    
+    values = countTotalPrice(request.user)     
     #pobranie nowej nowej kombinacji
     try:
         composition = Composition.objects.get(dish=dishDB, addon=addonDB)
@@ -111,17 +119,96 @@ def add_to_cart(request, dish):
         composition = Composition(dish=dishDB, addon=addonDB, price= price)
         composition.save()
 
-
-    if profil.money < (total_price + composition.price):
+    if profil.money < (values['total_price'] + composition.price):
         messages.warning(request,'Not enough money')
     else:
-        cart_object = Chart(user=user, composition=composition)
+        try:
+            cart_object = Cart.objects.get(user=user, composition=composition)
+            cart_object.quantity += 1
+        except:
+            cart_object = Cart(user=user, composition=composition)
         cart_object.save()
     
     return redirect('shop-home')
 
+@login_required
 def delete_from_cart(request, composition):
-    item = Chart.objects.get(id=composition)
+    item = Cart.objects.get(id=composition)
     item.delete()
     
     return redirect('shop-home')
+
+@login_required
+def order_summary(request):
+    values = countTotalPrice(request.user) 
+    context ={
+        'orders': values["items_in_cart"],
+        'total_price': values["total_price"],
+        'summary': True
+    }
+
+    return render(request, 'shop/summary.html', context)
+
+
+
+@login_required 
+def add_to_cart_summary(request, composition):
+    #pobranie dania
+    
+    #podbranie dodatku i klienta
+    
+    user = User.objects.get(id=request.user.id)
+    try:
+        profil = Profile.objects.get(user=user)
+    except:
+        messages.warning(request,'Need to feed your account')
+        return redirect('shop-order-summary')
+    #sprawdzenie zawartosci koszyka
+    values = countTotalPrice(request.user)     
+    #pobranie nowej nowej kombinacji
+    composition = Composition.objects.get(id=composition)
+
+    if profil.money < (values['total_price'] + composition.price):
+        messages.warning(request,'Not enough money')
+    else:
+        try:
+            cart_object = Cart.objects.get(user=user, composition=composition)
+            cart_object.quantity += 1
+        except:
+            cart_object = Cart(user=user, composition=composition)
+        cart_object.save()
+    
+    return redirect('shop-order-summary')
+
+@login_required 
+def remove_from_cart_summary(request, composition):
+    #pobranie dania
+    
+    #podbranie dodatku i klienta
+    
+    user = User.objects.get(id=request.user.id)
+    try:
+        profil = Profile.objects.get(user=user)
+    except:
+        messages.warning(request,'Need to feed your account')
+        return redirect('shop-order-summary')
+    #sprawdzenie zawartosci koszyka
+    values = countTotalPrice(request.user)     
+    #pobranie nowej nowej kombinacji
+    composition = Composition.objects.get(id=composition)
+
+    try:
+        cart_object = Cart.objects.get(user=user, composition=composition)
+        cart_object.quantity -= 1
+    except:
+        cart_object = Cart(user=user, composition=composition)
+    cart_object.save()
+    
+    return redirect('shop-order-summary')
+
+@login_required
+def delete_from_cart_summary(request, composition):
+    item = Cart.objects.get(id=composition)
+    item.delete()
+    
+    return redirect('shop-order-summary')

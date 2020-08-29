@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm
 from .models import Profile
+from django.core.exceptions import ObjectDoesNotExist
 
 def register(request):
     if request.method == 'POST':
@@ -20,8 +21,16 @@ def register(request):
 
 @login_required
 def profile(request):
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except:
+        profile = Profile(user=request.user)
+        profile.save()
+
     context  = {
         'users_log': Profile.objects.filter(user = request.user).exists(),
-        'profile_view': True
+        'profile_view': True,
+        'money': profile.money
     }
+
     return render(request, 'users/profile.html', context)
