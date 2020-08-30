@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Dish(models.Model):
     name = models.CharField(max_length=100)
-    ingredient = models.CharField(max_length=250)
+    ingredient = models.CharField(max_length=250, blank=True)
     price = models.FloatField()
     dish_type = models.CharField(max_length=20)
     dish_addon = models.BooleanField(default=True)
@@ -26,13 +26,19 @@ class Composition(models.Model):
     price = models.FloatField()
 
     def __str__(self):
-        return f'{self.dish} + {self.addon}'
+        if self.addon.name == 'empty':
+            return f'{self.dish}'
+        elif self.addon.addon_type == 'pizza':
+            return f'{self.dish} - {self.addon}'
+        else:
+            return f'{self.dish} + {self.addon}'
         
 class Orders(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     composition = models.ForeignKey(Composition, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+
 
     def __str__(self):
         return f'{self.user} + {self.composition} - {self.quantity}szt.'
@@ -44,5 +50,5 @@ class Cart(models.Model):
     quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return f'{self.user} + {self.composition} - {self.quantity}szt.'
+        return f'{self.user} - {self.composition} - {self.quantity}szt.'
     

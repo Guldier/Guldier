@@ -1,3 +1,4 @@
+from datetime import datetime 
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,23 +9,20 @@ from .models import (
     Dish, 
     AddOn,
     Composition,
-    Cart
+    Cart,
+    Orders
 )
-
 from users.models import (
     Profile
 )
 
-title = 'Home'
 
 def countTotalPrice(user):
     items_in_cart = Cart.objects.filter(user=user)
     total_price = 0
     for item in items_in_cart:
         total_price += item.composition.price * item.quantity
-        if item.composition.addon.name == 'empty':
-            item.composition.addon.name = ' '
-    
+        
     value_to_return ={
         'total_price': total_price,
         'items_in_cart': items_in_cart
@@ -35,7 +33,6 @@ def countTotalPrice(user):
 def home (request):
     context = {
         'dish': Dish.objects.all(),
-        'title': title,
         'type': 'all'
     }
     try:
@@ -59,7 +56,6 @@ def select_type(request, type):
     else:
         context = {
             'dish':Dish.objects.filter(dish_type = type),
-            'title': title,
             'type': type
         }
 
@@ -73,10 +69,11 @@ def select_type(request, type):
         return render(request, 'shop/home.html',context)
 
 def open_dish(request, dish):
+    type = Dish.objects.get(id=dish).dish_type
     context = {
         'dish': Dish.objects.filter(id=dish),
-        'titele': title,
-        'addon': AddOn.objects.filter(addon_type='first'),
+        'addon': AddOn.objects.filter(addon_type=type),
+        'open': True
     }
     try:
         values = countTotalPrice(request.user)    
@@ -144,19 +141,14 @@ def order_summary(request):
     context ={
         'orders': values["items_in_cart"],
         'total_price': values["total_price"],
-        'summary': True
+        'summary': True,
+        'money': Profile.objects.get(user=request.user).money
     }
 
     return render(request, 'shop/summary.html', context)
 
-
-
 @login_required 
 def add_to_cart_summary(request, composition):
-    #pobranie dania
-    
-    #podbranie dodatku i klienta
-    
     user = User.objects.get(id=request.user.id)
     try:
         profil = Profile.objects.get(user=user)
@@ -181,22 +173,15 @@ def add_to_cart_summary(request, composition):
     return redirect('shop-order-summary')
 
 @login_required 
-def remove_from_cart_summary(request, composition):
-    #pobranie dania
-    
-    #podbranie dodatku i klienta
-    
+def remove_from_cart_summary(request, composition):    
     user = User.objects.get(id=request.user.id)
     try:
         profil = Profile.objects.get(user=user)
     except:
         messages.warning(request,'Need to feed your account')
         return redirect('shop-order-summary')
-    #sprawdzenie zawartosci koszyka
-    values = countTotalPrice(request.user)     
-    #pobranie nowej nowej kombinacji
+    
     composition = Composition.objects.get(id=composition)
-
     try:
         cart_object = Cart.objects.get(user=user, composition=composition)
         cart_object.quantity -= 1
@@ -212,3 +197,45 @@ def delete_from_cart_summary(request, composition):
     item.delete()
     
     return redirect('shop-order-summary')
+
+@login_required
+def buy(request):
+    items = Cart.objects.filter(user=request.user)
+    values = countTotalPrice(request.user)     
+    total_price = values['total_price']
+    profile = Profile.objects.get(user=request.user)
+
+    for item in items:
+        buy = Orders(user= item.user, composition=item.composition, quantity=item.quantity)
+        buy.save()
+        item.delete()
+
+    profile.money = profile.money - total_price
+    profile.save()
+
+    messages.success(request,'Your order has been placed')
+
+    return redirect('shop-home')
+
+@login_required
+def show_history(request):    
+    dates = Orders.objects.filter(user=request.user).dates('order_date','day')
+    orders = Orders.objects.filter(user=request.user)
+    history = []
+    for d in reversed(dates): 
+        items = []
+        total = 0
+        for o in orders:          
+            if o.order_date.date() == d:
+                items.append(f'{o.composition} x {o.quantity}')
+                total += o.composition.price * o.quantity            
+
+        history.append({'date': d, 'items': items, 'price': total})
+
+
+    context = {
+        'summary': True,
+        'money': Profile.objects.get(user=request.user).money,
+        'history': history
+    }
+    return render(request,'shop/history.html',context)

@@ -11,7 +11,7 @@
                 <th scope="col">Price</th>
                 <th scope="col" style="text-align:center">Quantity</th>
                 <th scope="col"></th>
-                <th scope="col">Total Item Price</th>
+                <th scope="col" style="text-align:center">Total Item Price</th>
                 <th></th>
             </tr>
             </thead>
@@ -20,7 +20,7 @@
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>{{ item.composition}}</td>
-                        <td>{{ item.composition.price }}</td>
+                        <td>{{ item.composition.price }} zł</td>
                         <td style="text-align:center">
                                                
                             <a href="#" style="color:black">
@@ -38,33 +38,29 @@
                             </a>
                         </td>
                         <td>
-                            {{ order_item.get_total_price}}
                             <a href="{% url 'shop-delete-from-cart-summary' item.id%}">
                                 <button type="button" class="btn btn-primary btn-xs" style="padding: 4px">x</button>
                             </a>
                         </td>
-                        <td>                        
+                        <td style="text-align:center">         
+                            {{ item.composition.price|mul:item.quantity|floatformat}} zł            
                         </td>
                     </tr>   
                 {% empty %}
-                    <tr>
+                    <tr style="text-align:center">
                         <td colspan='5'>Your cart is empty</td>
                     </tr>         
                 {% endfor %}
                 <tr>
                     <td colspan="5"><b></b></td>
-                    <td><b>{{ total_price }}zl</b></td>
+                    <td><b>Total: {{ total_price }}zł</b></td>
                 </tr>
                 <tr>
                     <td colspan="2">
-                        {% if user.profile.money %}
-                            <a style="color:red">Your money after order: </a>
-                        {% else %}
-                            <a>Your money after buy: </a>
-                        {% endif %}
+                        <a style="color:red"><b>Your money after order: {{money|sub:total_price|floatformat}} zł</b></a>
                     </td>
                     <td colspan="5">
-                        <a class='btn btn-warning float-right ml-2' href="#">Order</a>
+                        <a class='btn btn-warning float-right ml-2' href="{% url 'shop-buy' %}"><b>Buy</b></a>
                     </td>
                 </tr>
             </tbody>

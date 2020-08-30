@@ -9,6 +9,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
     {% if type == 'special' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -17,6 +18,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
     {% if type == 'main' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -25,6 +27,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
     {% if type == 'soup' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -33,6 +36,7 @@
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
     {% if type == 'fastfood' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -41,6 +45,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
     {% if type == 'pizza' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -49,6 +54,16 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+    {% endif %}
+    {% if type == 'dumplig' %}
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'special'%}">Specials</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
     {% endif %}
   
 </nav>
@@ -63,20 +78,19 @@
                 <small class="article-content" style='color:#0074d9'>Price: {{ menu.price }}zł</small>
             </div> 
             {% if user.is_authenticated %}
-                {% if addon %}
-                    <div class="input-group mb-2">
-                        
+                {% if open %}
+                    <div class="input-group mb-2">                        
                         <div class="container-fluid">
                             <form action="{% url 'shop-add-cart' menu.id %}">
                                 {% if menu.dish_addon %}
                                     <div class="input-group-prepend">
                                         <label class="input-group-text" for="inputGroupSelect01">Options</label>
-                                    </div>
-                                    <select class="custom-select" name="addon_select">
-                                        {% for add in addon %}
-                                            <option value="{{ add.id }}">{{ add.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                        <select class="custom-select" name="addon_select">
+                                            {% for add in addon %}
+                                                <option value="{{ add.id }}">{{ add.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>                                    
                                 {% endif %}
                                 <input type="submit" value="Add to cart" class="btn btn-primary">
                         </form>

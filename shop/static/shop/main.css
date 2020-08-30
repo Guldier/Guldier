@@ -11,6 +11,7 @@ body {
   ul {
     margin: 0;
   }
+
   
   .bg-steel {
     background-color: #5f788a;
@@ -27,6 +28,7 @@ body {
   .site-header .navbar-nav .nav-link.active {
     font-weight: 500;
   }
+
   
   .content-section {
     background: #ffffff;
@@ -34,6 +36,17 @@ body {
     border: 1px solid #dddddd;
     border-radius: 3px;
     margin-bottom: 20px;
+  }
+
+  .content-section-sticky {
+    background: #ffffff;
+    padding: 10px 10px;
+    border: 1px solid #dddddd;
+    border-radius: 20px;
+    margin-bottom:0;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 60px;
   }
   
   .article-title {
