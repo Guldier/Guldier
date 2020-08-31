@@ -87,7 +87,7 @@
                                         <label class="input-group-text" for="inputGroupSelect01">Options</label>
                                         <select class="custom-select" name="addon_select">
                                             {% for add in addon %}
-                                                <option value="{{ add.id }}">{{ add.name }}</option>
+                                                <option value="{{ add.id }}">{{ add.name }} + {{add.price}} zł</option>
                                             {% endfor %}
                                         </select>
                                     </div>                                    
