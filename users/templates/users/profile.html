@@ -1,10 +1,15 @@
 {% extends 'shop/base.html' %}
 {% block content %}
-
-    <h2>{{ user.username }} </h2>
-    {% if users_log is False %}
-        <a> You need to put some money on your account</a>
-    {% else %}
-        <a> You have: {{ user.profile.money }} zl on your account</a>
-    {% endif %}
+    <div class="container">
+        <h2>{{ user.username }} </h2>
+        {% if users_log is False %}
+            <a> You need to put some money on your account</a>
+        {% else %}
+            <a> You have: {{ user.profile.money }} zl on your account</a>
+        {% endif %}
+    </div>
+    <br>
+    <div class="container">
+        <a href="{% url 'password_change' %}"> Change your password</a>
+    </div>
 {% endblock content %}  
