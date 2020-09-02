@@ -20,7 +20,7 @@
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>{{ item.composition}}</td>
-                        <td>{{ item.composition.price }} zł</td>
+                        <td>{{ item.composition.dish.price|add:item.composition.addon.price }} zł</td>
                         <td style="text-align:center">
                                                
                             <a href="#" style="color:black">
@@ -43,7 +43,7 @@
                             </a>
                         </td>
                         <td style="text-align:center">         
-                            {{ item.composition.price|mul:item.quantity|floatformat}} zł            
+                            {{ item.composition.dish.price|add:item.composition.addon.price|mul:item.quantity|floatformat}} zł            
                         </td>
                     </tr>   
                 {% empty %}

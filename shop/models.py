@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+import calendar
 
 class Dish(models.Model):
     name = models.CharField(max_length=100)
@@ -23,7 +24,7 @@ class AddOn(models.Model):
 class Composition(models.Model):
     dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
     addon = models.ForeignKey(AddOn, on_delete=models.CASCADE)
-    price = models.FloatField()
+    #price = models.FloatField()
 
     def __str__(self):
         if self.addon.name == 'empty':
@@ -51,4 +52,13 @@ class Cart(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.composition} - {self.quantity}szt.'
-    
+
+
+class WeekDish(models.Model):
+    day = models.IntegerField()
+    name = models.CharField(max_length=100)
+    ingredient = models.CharField(max_length=250, blank=True)
+
+    def __str__(self):
+        days = list(calendar.day_name)
+        return f'{days[self.day]} - {self.name} - {self.ingredient}'

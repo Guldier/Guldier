@@ -5,12 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView,TemplateView,CreateView
 from django.contrib.auth.models import User
 from django.db.models import Sum
+import calendar
 from .models import (
     Dish, 
     AddOn,
     Composition,
     Cart,
-    Orders
+    Orders,
+    WeekDish
 )
 from users.models import (
     Profile
@@ -21,7 +23,8 @@ def countTotalPrice(user):
     items_in_cart = Cart.objects.filter(user=user)
     total_price = 0
     for item in items_in_cart:
-        total_price += item.composition.price * item.quantity
+        composition_price = item.composition.dish.price + item.composition.addon.price
+        total_price += composition_price * item.quantity
         
     value_to_return ={
         'total_price': total_price,
@@ -29,10 +32,52 @@ def countTotalPrice(user):
     }
     return value_to_return
     
+def selectMenu(type):
+    today = datetime.today()
+    if type == 'all':
+        allDish = Dish.objects.all()
+        for dish in allDish:
+            if dish.dish_type == 'special':
+                if dish.name == 'Zestaw dnia':
+                    dish_day = WeekDish.objects.get(name='Danie dnia', day=today.weekday())
+                    soup_day = WeekDish.objects.get(name='Zupa dnia', day=today.weekday())
+                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                elif dish.name == 'Zestaw dnia FIT':
+                    dish_day = WeekDish.objects.get(name='Danie dnia FIT', day=today.weekday())
+                    soup_day = WeekDish.objects.get(name='Zupa dnia FIT', day=today.weekday())
+                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                try:
+                    weekdish = WeekDish.objects.get(name=dish.name, day=today.weekday())               
+                    dish.ingredient = weekdish.ingredient
+                except:
+                    pass
+        returndish = allDish
+    elif type == 'special':
+        allDish = Dish.objects.filter(dish_type = type)
+        for dish in allDish:
+            if dish.dish_type == 'special':
+                if dish.name == 'Zestaw dnia':
+                    dish_day = WeekDish.objects.get(name='Danie dnia', day=today.weekday())
+                    soup_day = WeekDish.objects.get(name='Zupa dnia', day=today.weekday())
+                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                elif dish.name == 'Zestaw dnia FIT':
+                    dish_day = WeekDish.objects.get(name='Danie dnia FIT', day=today.weekday())
+                    soup_day = WeekDish.objects.get(name='Zupa dnia FIT', day=today.weekday())
+                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                try:
+                    weekdish = WeekDish.objects.get(name=dish.name, day=today.weekday())               
+                    dish.ingredient = weekdish.ingredient
+                except:
+                    pass
+        returndish = allDish
+    else:
+        returndish = Dish.objects.filter(dish_type = type)
 
-def home (request):
+    return returndish
+
+def home (request):    
     context = {
-        'dish': Dish.objects.all(),
+        'dish': selectMenu('all'),
         'type': 'all'
     }
     try:
@@ -55,7 +100,7 @@ def select_type(request, type):
        return redirect('shop-home')
     else:
         context = {
-            'dish':Dish.objects.filter(dish_type = type),
+            'dish':selectMenu(type),
             'type': type
         }
 
@@ -112,11 +157,10 @@ def add_to_cart(request, dish):
     try:
         composition = Composition.objects.get(dish=dishDB, addon=addonDB)
     except Composition.DoesNotExist:
-        price = dishDB.price + addonDB.price
-        composition = Composition(dish=dishDB, addon=addonDB, price= price)
+        composition = Composition(dish=dishDB, addon=addonDB)
         composition.save()
 
-    if profil.money < (values['total_price'] + composition.price):
+    if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
         messages.warning(request,'Not enough money')
     else:
         try:
@@ -160,7 +204,7 @@ def add_to_cart_summary(request, composition):
     #pobranie nowej nowej kombinacji
     composition = Composition.objects.get(id=composition)
 
-    if profil.money < (values['total_price'] + composition.price):
+    if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
         messages.warning(request,'Not enough money')
     else:
         try:
@@ -227,8 +271,8 @@ def show_history(request):
         total = 0
         for o in orders:          
             if o.order_date.date() == d:
-                items.append(f'{o.composition} x {o.quantity}')
-                total += o.composition.price * o.quantity            
+                items.append(f'{o.composition} x {o.quantity} - {o.composition.dish.price + o.composition.addon.price} zł')
+                total += (o.composition.dish.price + o.composition.addon.price) * o.quantity            
 
         history.append({'date': d, 'items': items, 'price': total})
 

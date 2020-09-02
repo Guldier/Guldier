@@ -5,7 +5,7 @@
         {% if users_log is False %}
             <a> You need to put some money on your account</a>
         {% else %}
-            <a> You have: {{ user.profile.money }} zl on your account</a>
+            <a> You have: {{ user.profile.money|floatformat }} zł on your account</a>
         {% endif %}
     </div>
     <br>
