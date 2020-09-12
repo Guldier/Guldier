@@ -16,9 +16,9 @@ def create_list():
     
     for food in today_orders:
         if food.composition in composition_list:
-            composition_list[food.composition] = composition_list.get(food.composition,0) + 1
+            composition_list[food.composition] = composition_list.get(food.composition,0) + food.quantity
         else:
-            composition_list[food.composition] = 1
+            composition_list[food.composition] = food.quantity
     
     message = 'PODUMOWANIE WSZYSTKICH DAŃ\n'
 

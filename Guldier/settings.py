@@ -81,7 +81,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Guldier.wsgi.application'
 
 CRONJOBS = [
-    ('* 13 * * *', 'shop.cron.create_list')
+    ('*/5 * * * *', 'shop.cron.create_list')
 ]
 
 # Database
