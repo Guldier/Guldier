@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
-    'django-extensions',
+    'django_extensions',
+    'django_crontab',
     'django_template_maths',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -79,6 +80,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Guldier.wsgi.application'
 
+CRONJOBS = [
+    ('* 13 * * *', 'shop.cron.create_list')
+]
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
