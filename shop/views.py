@@ -56,7 +56,8 @@ def selectMenu(type):
         else:
             for dish in allDish:
                 if dish.dish_type == 'special':
-                    dish.ingredient = 'Weekend'                
+                    dish.ingredient = 'Weekend'   
+            returndish = allDish             
     elif type == 'special':
         allDish = Dish.objects.filter(dish_type = type)
         for dish in allDish:
