@@ -92,7 +92,10 @@ def home (request):
 
 
 def about (request):
-    return render(request, 'shop/about.html', {'title': 'About'})
+    context = {
+        'summary': True
+    }
+    return render(request, 'shop/about.html', context)
 
 
 def select_type(request, type):

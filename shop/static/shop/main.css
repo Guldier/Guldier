@@ -48,7 +48,9 @@ body {
     position: sticky;
     top: 60px;
   }
-  
+  .container-fluid {
+    border-radius:20px;
+  }  
   .article-title {
     color: #444444;
   }
