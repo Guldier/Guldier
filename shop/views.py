@@ -36,22 +36,27 @@ def selectMenu(type):
     today = datetime.today()
     if type == 'all':
         allDish = Dish.objects.all()
-        for dish in allDish:
-            if dish.dish_type == 'special':
-                if dish.name == 'Zestaw dnia':
-                    dish_day = WeekDish.objects.get(name='Danie dnia', day=today.weekday())
-                    soup_day = WeekDish.objects.get(name='Zupa dnia', day=today.weekday())
-                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
-                elif dish.name == 'Zestaw dnia FIT':
-                    dish_day = WeekDish.objects.get(name='Danie dnia FIT', day=today.weekday())
-                    soup_day = WeekDish.objects.get(name='Zupa dnia FIT', day=today.weekday())
-                    dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
-                try:
-                    weekdish = WeekDish.objects.get(name=dish.name, day=today.weekday())               
-                    dish.ingredient = weekdish.ingredient
-                except:
-                    pass
-        returndish = allDish
+        if today.weekday()<5:
+            for dish in allDish:
+                if dish.dish_type == 'special':
+                    if dish.name == 'Zestaw dnia':
+                        dish_day = WeekDish.objects.get(name='Danie dnia', day=today.weekday())
+                        soup_day = WeekDish.objects.get(name='Zupa dnia', day=today.weekday())
+                        dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                    elif dish.name == 'Zestaw dnia FIT':
+                        dish_day = WeekDish.objects.get(name='Danie dnia FIT', day=today.weekday())
+                        soup_day = WeekDish.objects.get(name='Zupa dnia FIT', day=today.weekday())
+                        dish.ingredient = dish_day.ingredient + ' + ' + soup_day.ingredient
+                    try:
+                        weekdish = WeekDish.objects.get(name=dish.name, day=today.weekday())               
+                        dish.ingredient = weekdish.ingredient
+                    except:
+                        pass
+            returndish = allDish
+        else:
+            for dish in allDish:
+                if dish.dish_type == 'special':
+                    dish.ingredient = 'Weekend'                
     elif type == 'special':
         allDish = Dish.objects.filter(dish_type = type)
         for dish in allDish:
