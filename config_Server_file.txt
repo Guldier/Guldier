@@ -1,0 +1,4 @@
+sudo chown :www-data db.sqlite3
+sudo chmod 664 db.sqlite3
+
+sudo service apache2 restart
