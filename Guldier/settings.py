@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
+    'django-extensions',
     'django_template_maths',
     'django.contrib.admin',
     'django.contrib.auth',
