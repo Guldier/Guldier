@@ -36,6 +36,6 @@ def create_list():
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['damian.jadacki@linetech.pl'],
+        ['michal.grebosz@linetech.pl'],
         fail_silently=False,
     )
