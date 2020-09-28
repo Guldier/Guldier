@@ -1,4 +1,4 @@
-from datetime import datetime 
+from datetime import datetime,time
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,6 +18,16 @@ from users.models import (
     Profile
 )
 
+
+startTime = time(5,00)
+endTime = time(9,00)
+
+def check_time():
+    now = datetime.now()
+    if now.time() > startTime and now.time() < endTime:
+        return True
+    else:
+        return False
 
 def countTotalPrice(user):
     items_in_cart = Cart.objects.filter(user=user)
@@ -90,7 +100,10 @@ def selectMenu(type):
 def home (request):    
     context = {
         'dish': selectMenu('all'),
-        'type': 'all'
+        'type': 'all',
+        'hoursStart': startTime,
+        'hoursEnd': endTime,
+        'time': datetime.now()
     }
     try:
         values = countTotalPrice(request.user)    
@@ -102,13 +115,11 @@ def home (request):
 
     return render(request, 'shop/home.html',context)
 
-
 def about (request):
     context = {
         'summary': True
     }
     return render(request, 'shop/about.html', context)
-
 
 def select_type(request, type):
     if type == "all":
@@ -172,134 +183,155 @@ def open_dish(request, dish):
 
 @login_required 
 def add_to_cart(request, dish):
-    #pobranie dania
-    dishDB = Dish.objects.get(id=dish)
-    a=0
-    #czy danie ma dodatek
-    if dishDB.dish_addon:
-        if request.method == 'GET':
-            a = request.GET['addon_select']
-    else:
-        addon_empty = AddOn.objects.get(addon_type='empty')
-        a = addon_empty.id
+    if check_time():
+        #pobranie dania
+        dishDB = Dish.objects.get(id=dish)
+        a=0
+        #czy danie ma dodatek
+        if dishDB.dish_addon:
+            if request.method == 'GET':
+                a = request.GET['addon_select']
+        else:
+            addon_empty = AddOn.objects.get(addon_type='empty')
+            a = addon_empty.id
 
-    #podbranie dodatku i klienta
-    addonDB = AddOn.objects.get(id=a)
-    user = User.objects.get(id=request.user.id)
-    try:
-        profil = Profile.objects.get(user=user)
-    except:
-        messages.warning(request,'Need to feed your account')
-        return redirect('shop-home')
-    #sprawdzenie zawartosci koszyka
-    values = countTotalPrice(request.user)     
-    #pobranie nowej nowej kombinacji
-    try:
-        composition = Composition.objects.get(dish=dishDB, addon=addonDB)
-    except Composition.DoesNotExist:
-        composition = Composition(dish=dishDB, addon=addonDB)
-        composition.save()
-
-    if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
-        messages.warning(request,'Not enough money')
-    else:
+        #podbranie dodatku i klienta
+        addonDB = AddOn.objects.get(id=a)
+        user = User.objects.get(id=request.user.id)
         try:
-            cart_object = Cart.objects.get(user=user, composition=composition)
-            cart_object.quantity += 1
+            profil = Profile.objects.get(user=user)
         except:
-            cart_object = Cart(user=user, composition=composition)
-        cart_object.save()
-    
-    return redirect('shop-home')
+            messages.warning(request,'Need to feed your account')
+            return redirect('shop-home')
+        #sprawdzenie zawartosci koszyka
+        values = countTotalPrice(request.user)     
+        #pobranie nowej nowej kombinacji
+        try:
+            composition = Composition.objects.get(dish=dishDB, addon=addonDB)
+        except Composition.DoesNotExist:
+            composition = Composition(dish=dishDB, addon=addonDB)
+            composition.save()
+
+        if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
+            messages.warning(request,'Not enough money')
+        else:
+            try:
+                cart_object = Cart.objects.get(user=user, composition=composition)
+                cart_object.quantity += 1
+            except:
+                cart_object = Cart(user=user, composition=composition)
+            cart_object.save()
+        
+        return redirect('shop-home')
+    else:
+        return redirect('shop-home')
 
 @login_required
 def delete_from_cart(request, composition):
-    item = Cart.objects.get(id=composition)
-    item.delete()
+    if check_time():
+        item = Cart.objects.get(id=composition)
+        item.delete()
     
-    return redirect('shop-home')
+        return redirect('shop-home')
+    else:
+        return redirect('shop-home')
 
 @login_required
 def order_summary(request):
-    values = countTotalPrice(request.user) 
-    context ={
-        'orders': values["items_in_cart"],
-        'total_price': values["total_price"],
-        'summary': True,
-        'money': Profile.objects.get(user=request.user).money
-    }
+    if check_time():
+        values = countTotalPrice(request.user) 
+        context ={
+            'orders': values["items_in_cart"],
+            'total_price': values["total_price"],
+            'summary': True,
+            'money': Profile.objects.get(user=request.user).money
+        }
 
-    return render(request, 'shop/summary.html', context)
+        return render(request, 'shop/summary.html', context)
+    else:
+        return redirect('shop-home')
 
 @login_required 
 def add_to_cart_summary(request, composition):
-    user = User.objects.get(id=request.user.id)
-    try:
-        profil = Profile.objects.get(user=user)
-    except:
-        messages.warning(request,'Need to feed your account')
-        return redirect('shop-order-summary')
-    #sprawdzenie zawartosci koszyka
-    values = countTotalPrice(request.user)     
-    #pobranie nowej nowej kombinacji
-    composition = Composition.objects.get(id=composition)
+    if check_time():
+        user = User.objects.get(id=request.user.id)
+        try:
+            profil = Profile.objects.get(user=user)
+        except:
+            messages.warning(request,'Need to feed your account')
+            return redirect('shop-order-summary')
+        #sprawdzenie zawartosci koszyka
+        values = countTotalPrice(request.user)     
+        #pobranie nowej nowej kombinacji
+        composition = Composition.objects.get(id=composition)
 
-    if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
-        messages.warning(request,'Not enough money')
+        if profil.money < (values['total_price'] + composition.dish.price + composition.addon.price):
+            messages.warning(request,'Not enough money')
+        else:
+            try:
+                cart_object = Cart.objects.get(user=user, composition=composition)
+                cart_object.quantity += 1
+            except:
+                cart_object = Cart(user=user, composition=composition)
+            cart_object.save()
+        
+        return redirect('shop-order-summary')
     else:
+        return redirect('shop-home')
+
+@login_required 
+def remove_from_cart_summary(request, composition): 
+    if check_time():   
+        user = User.objects.get(id=request.user.id)
+        try:
+            profil = Profile.objects.get(user=user)
+        except:
+            messages.warning(request,'Need to feed your account')
+            return redirect('shop-order-summary')
+        
+        composition = Composition.objects.get(id=composition)
         try:
             cart_object = Cart.objects.get(user=user, composition=composition)
-            cart_object.quantity += 1
+            cart_object.quantity -= 1
         except:
             cart_object = Cart(user=user, composition=composition)
         cart_object.save()
-    
-    return redirect('shop-order-summary')
-
-@login_required 
-def remove_from_cart_summary(request, composition):    
-    user = User.objects.get(id=request.user.id)
-    try:
-        profil = Profile.objects.get(user=user)
-    except:
-        messages.warning(request,'Need to feed your account')
+        
         return redirect('shop-order-summary')
-    
-    composition = Composition.objects.get(id=composition)
-    try:
-        cart_object = Cart.objects.get(user=user, composition=composition)
-        cart_object.quantity -= 1
-    except:
-        cart_object = Cart(user=user, composition=composition)
-    cart_object.save()
-    
-    return redirect('shop-order-summary')
+    else:
+        return redirect('shop-home')
 
 @login_required
 def delete_from_cart_summary(request, composition):
-    item = Cart.objects.get(id=composition)
-    item.delete()
-    
-    return redirect('shop-order-summary')
+    if check_time():
+        item = Cart.objects.get(id=composition)
+        item.delete()
+        
+        return redirect('shop-order-summary')
+    else:
+        return redirect('shop-home')
 
 @login_required
 def buy(request):
-    items = Cart.objects.filter(user=request.user)
-    values = countTotalPrice(request.user)     
-    total_price = values['total_price']
-    profile = Profile.objects.get(user=request.user)
+    if check_time():
+        items = Cart.objects.filter(user=request.user)
+        values = countTotalPrice(request.user)     
+        total_price = values['total_price']
+        profile = Profile.objects.get(user=request.user)
 
-    for item in items:
-        buy = Orders(user= item.user, composition=item.composition, quantity=item.quantity)
-        buy.save()
-        item.delete()
+        for item in items:
+            buy = Orders(user= item.user, composition=item.composition, quantity=item.quantity)
+            buy.save()
+            item.delete()
 
-    profile.money = profile.money - total_price
-    profile.save()
+        profile.money = profile.money - total_price
+        profile.save()
 
-    messages.success(request,'Your order has been placed')
+        messages.success(request,'Your order has been placed')
 
-    return redirect('shop-home')
+        return redirect('shop-home')
+    else:
+        return redirect('shop-home')
 
 @login_required
 def show_history(request):    

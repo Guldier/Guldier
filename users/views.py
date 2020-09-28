@@ -33,3 +33,18 @@ def profile(request):
     }
 
     return render(request, 'users/profile.html', context)
+
+@login_required
+def feed_account(request):
+    if request.user.is_staff:
+        if request.method == 'POST':
+            form = 
+        prifiles = Profile.objects.all()
+        context  = {
+            'summary': True,
+            'money': Profile.objects.get(user=request.user).money,
+        }
+        return render(request, 'users/feedme.html',context)
+    else:
+        return redirect('shop-home')
+        
