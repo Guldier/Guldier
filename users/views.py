@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, MoneyMove
 from .models import Profile
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -38,11 +38,21 @@ def profile(request):
 def feed_account(request):
     if request.user.is_staff:
         if request.method == 'POST':
-            form = 
-        prifiles = Profile.objects.all()
+            form = MoneyMove(request.POST)
+            if form.is_valid():
+                form.save()   
+                profile = form.cleaned_data.get('profile')
+                money = form.cleaned_data.get('moneyMove')
+                profile_update = Profile.objects.get(user=profile.user)
+                profile_update.money += money
+                profile_update.save()
+                messages.success(request, f'Added {money} zł to {profile.user}')
+        else:
+            form = MoneyMove()    
         context  = {
             'summary': True,
             'money': Profile.objects.get(user=request.user).money,
+            'form': form
         }
         return render(request, 'users/feedme.html',context)
     else:

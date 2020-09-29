@@ -10,8 +10,9 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
-class MoneyMove(ModelForm):
-    money = forms.ModelChoiseField(queryset=Profile.objects.all())
+
+class MoneyMove(forms.ModelForm):    
+    profile = forms.ModelChoiceField(queryset=Profile.objects.all())
     class Meta:
         model = MoneyMovement
-        fields = ['Profile', 'moneyMove']
+        fields = ['profile', 'moneyMove']
