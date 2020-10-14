@@ -4,6 +4,10 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, MoneyMove
 from .models import Profile
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime,time
+
+startTime = time(5,00)
+endTime = time(9,00)
 
 def register(request):
     if request.method == 'POST':
@@ -15,7 +19,14 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form': form})
+
+    context = {
+        'time': datetime.now(),
+        'hoursStart': startTime,
+        'hoursEnd': endTime,
+        'form': form
+    }
+    return render(request, 'users/register.html', context)
 
 
 @login_required
@@ -29,7 +40,10 @@ def profile(request):
     context  = {
         'users_log': Profile.objects.filter(user = request.user).exists(),
         'profile_view': True,
-        'money': profile.money
+        'money': profile.money,
+        'time': datetime.now(),
+        'hoursStart': startTime,
+        'hoursEnd': endTime,
     }
 
     return render(request, 'users/profile.html', context)

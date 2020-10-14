@@ -127,7 +127,10 @@ def select_type(request, type):
     else:
         context = {
             'dish':selectMenu(type),
-            'type': type
+            'type': type,
+            'hoursStart': startTime,
+            'hoursEnd': endTime,
+            'time': datetime.now()
         }
 
         try:
@@ -169,7 +172,10 @@ def open_dish(request, dish):
     context = {
         'dish': dishO,
         'addon': AddOn.objects.filter(addon_type=type),
-        'open': True
+        'open': True,
+        'time': datetime.now(),
+        'hoursStart': startTime,
+        'hoursEnd': endTime,
     }
     try:
         values = countTotalPrice(request.user)    
