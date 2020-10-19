@@ -33,7 +33,7 @@ def create_list():
 
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
-	money += orders.compositions.dish.price*orders.quantity
+		money += orders.composition.dish.price*orders.quantity
 
     message += f'Łącznie do zapłaty: {money}zł\n'
     message += '\nPozdrawiamy\nLinetech'
