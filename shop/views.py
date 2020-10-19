@@ -165,7 +165,7 @@ def open_dish(request, dish):
                     except:
                         pass
         else:
-            for dish in allDish:
+            for dish in dishO:
                 if dish.dish_type == 'special':
                     dish.ingredient = 'Weekend'           
 

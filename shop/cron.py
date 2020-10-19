@@ -13,6 +13,7 @@ def create_list():
     today = datetime.today()
     today_orders=Orders.objects.filter(order_date__date=today.date())
     composition_list = {}
+    money = 0
     
     for food in today_orders:
         if food.user.is_stuff:
@@ -32,14 +33,16 @@ def create_list():
 
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
+	money += orders.compositions.dish.price*orders.quantity
 
-    message += '\n Pozdrawiamy\nLinetech'
+    message += f'Łącznie do zapłaty: {money}zł\n'
+    message += '\nPozdrawiamy\nLinetech'
     
     send_mail(
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['damian.jadacki@linetech.pl','michal.grebosz@linetech.pl'],
+        ['damian.jadacki@linetech.pl'],
         fail_silently=False,
     )
 
@@ -66,12 +69,12 @@ def create_list_rep():
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
 
-    message += '\n Dziękuje\nOla Cynk'
+    message += 'Jak zawsze proszę o dopisanie do FV z obiadami dla rep\n Dziękuje\nOla Cynk'
 
     send_mail(
         f'Lista obiadów rep {today.date()}',
         message,
         None,
-        ['aleksandra.cynk@linetech.pl','damian.jadacki@linetech.pl'],
+        ['damian.jadacki@linetech.pl'],
         fail_silently=False,
     )
