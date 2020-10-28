@@ -16,13 +16,10 @@ def create_list():
     money = 0
     
     for food in today_orders:
-        if food.user.is_stuff:
-            pass
+        if food.composition in composition_list:
+            composition_list[food.composition] = composition_list.get(food.composition,0) + food.quantity
         else:
-            if food.composition in composition_list:
-                composition_list[food.composition] = composition_list.get(food.composition,0) + food.quantity
-            else:
-                composition_list[food.composition] = food.quantity
+            composition_list[food.composition] = food.quantity
     
     message = 'PODUMOWANIE WSZYSTKICH DAŃ\n'
 
@@ -33,16 +30,16 @@ def create_list():
 
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
-		money += orders.composition.dish.price*orders.quantity
+        money += (orders.composition.dish.price + orders.composition.addon.price) * orders.quantity
 
-    message += f'Łącznie do zapłaty: {money}zł\n'
+    message += f'\nŁącznie do zapłaty: {money}zł\n'
     message += '\nPozdrawiamy\nLinetech'
     
     send_mail(
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['damian.jadacki@linetech.pl'],
+        ['damian.jadacki@linetech.pl','biuro@hotel-trzykorony.pl','michal.grebosz@linetech.pl','bartosz.wrobel@linetech.pl'],
         fail_silently=False,
     )
 
@@ -68,8 +65,6 @@ def create_list_rep():
 
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
-
-    message += 'Jak zawsze proszę o dopisanie do FV z obiadami dla rep\n Dziękuje\nOla Cynk'
 
     send_mail(
         f'Lista obiadów rep {today.date()}',

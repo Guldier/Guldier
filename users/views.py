@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime,time
 
 startTime = time(5,00)
-endTime = time(9,00)
+endTime = time(10,00)
 
 def register(request):
     if request.method == 'POST':
