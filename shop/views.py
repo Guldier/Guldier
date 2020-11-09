@@ -112,7 +112,7 @@ def home (request):
         context.update({'money': money})
     except:
         pass    
-
+    #messages.warning(request,'We are sorry for the bug in the FIT day dish. This bug has been fixed. If you experience any other cases, please contact us')
     return render(request, 'shop/home.html',context)
 
 def about (request):
