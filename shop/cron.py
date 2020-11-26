@@ -157,13 +157,109 @@ def five_s():
     workbook.save(filename=f'/home/guldier/5S/{filename_excel}')
     text = 'Kolejna to juz proba z signature'
     html = """\
-    <html>
+    <!DOCTYPE html>
+    <html lang = "pl-PL">
+        <head>
+            <meta http - equiv ="Content-Language" content ="pl">
+            <meta charset = "UTF-8">
+        </head>
         <body>
-            <table width = "600" cellspacing="0" cellpadding = "0" border = "0">
+            <style>
+            table {font-family: Segoe UI,sans-serif;background: transparent;}
+            p.a {font-size: 14px; color:#482960;}
+            p.b {font-size: 11px; color:#482960;}
+            p.c {font-size: 11px; color:#737373;}
+            p.rodo {font-size: 8px; color:#737373; text-align: justify;};
+            a:link {font-size: 11px; text-decoration: none; color: #737373;}
+            a:visited {font-size: 11px; text-decoration: none; color: #737373;}
+            a:active {font-size: 11px; text-decoration: none; color: #737373;}
+            a:hover {font-size: 11px; text-decoration: none; color: #737373;}
+            tbody.a {background: transparent;background-color:transparent}
+            </style>
+            <table width = "600" cellspacing="0" cellpadding = "0 " border = "0 ">
+                <tbody class="a">
+                    <tr>
+                        <td>
+                            <p class="a"><b> Damian Jadacki |</b> Engineer</p>
+                        </td>
+                        <td rowspan="2">
+
+                        </td>
+                        <td  colspan= "5" rowspan="2">
+                            <a href="http://aviaprime.eu"><img  style = "border:none" src = "http://ftp.linetech.nazwa.pl/stopka/avia.png"></a>
+                        </td>
+                        <td rowspan="2">
+
+                        </td>
+                        <td rowspan="2">
+
+                        </td>
+                        <td rowspan="2">
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p class="b">LINETECH Aircraft Maintenance </p>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan=" 6" height=" 20 "> 
+                            <br /> <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p><a href="tel:+48887 400 189">+48 603 955 708 </a></p>
+                        </td>
+                        <td></td>
+                        <td rowspan="3" width = "65">
+                            <a href="http://www.linkedin.com/company/linetech-aircraft-maintenance"><img style = "border:none" width = "25" height = "25" src = "http://ftp.linetech.nazwa.pl/stopka/linkedin.png"></a>
+                        </td>
+                        <td rowspan="3" width = "65">
+                            <a href="http://twitter.com/linetech_mro"><img style = "border:none" width = "25" height = "25" src = "http://ftp.linetech.nazwa.pl/stopka/twitter.png"></a>
+                        </td>
+                        <td rowspan="3" width = "65">
+                            <a href="http://instagram.com/linetech_mro"><img style = "border:none" width = "25" height = "25" src = "http://ftp.linetech.nazwa.pl/stopka/instagram.png"></a>
+                        </td>
+                        <td rowspan="3" width = "20">
+                            <a href="https://www.youtube.com/channel/UCS2tZyT9Mn0ArxIy41LVjYw"><img style = "border:none" width = "25" height = "25" src = "http://ftp.linetech.nazwa.pl/stopka/youtube.png"></a>
+                        </td>                
+                    </tr>
+                    <tr>
+                        <td>
+                            <p> <a href="malito:michal.grebosz@linetech.pl"> damian.jadacki@linetech.pl </a></p>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p><a href="www.aviaprime.eu"> www.aviaprime.eu </a></p>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>    
+            <table width ="600">
                 <tr>
-                    <td>
-                        <p><b> Damian Jadacki |</b> Engineer</p>
-                    </td>
+                    <a href="http://seemore.aviaprime.eu"<img width = "600" height = "80" src = "http://ftp.linetech.nazwa.pl/stopka/Banner.png" alt = "Instagram" style = "border:none"></a>
+                </tr>
+                <tr>
+                    <p class="rodo">Note: Under the General Data Protection Regulation (GDPR) (EU) 2016/679, we have a legal duty to protect any information we collect from you. Information contained in this email and any attachments may be privileged or confidential and intended for the exclusive use of the original recipient. If the reader of this e-mail is not the intended recipient or an agent responsibility for delivering it to the intended recipient, you are hereby notified that you have received this document in error and that any review, dissemination, distribution or coping of this message is strictly prohibited. If you have received this e-mail in error, please notify office@linetech.pl immediately. Linetech S.A. is 100% compliant with the General Data Protection Regulation (GDPR) .To learn more about how we collect, keep, and process your private information in compliance with GDPR, please view our privacy policy or contact us at iod@linetech.pl</p>
                 </tr>
             </table>
         </body>
