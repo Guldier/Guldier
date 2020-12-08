@@ -1,8 +1,12 @@
 from openpyxl import Workbook, load_workbook
 import random
-import smtplib
+import smtplib, ssl
+
+from email import encoders
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
 from datetime import datetime
 from django.core.mail import send_mail, get_connection
 from django.core.mail.message import EmailMessage
@@ -155,7 +159,17 @@ def five_s():
         sheet2.cell(row=32, column=free_column).value = suma_pkt
     filename_excel = f'5S RZE Engineering {dzis.strftime("%B")} {dzis.strftime("%Y")} (W{dzis.isocalendar()[1]}) {dzis.strftime("%d")}.{dzis.strftime("%m")}.{dzis.strftime("%Y")}.xlsx'
     workbook.save(filename=f'/home/guldier/5S/{filename_excel}')
-    text = 'Kolejna to juz proba z signature'
+
+
+    msg = MIMEMultipart("alternative")
+    msg['Subject'] = '5S'
+    msg['From'] = 'damian.jadacki@linetech.pl'
+    msg['To'] = 'bartosz.wrobel@linetech.pl'
+
+    text = f'Dear Roney,\nPlease find 5S report for {dzis.strftime("%d")}.{dzis.strftime("%m")}.{dzis.strftime("%Y")}'
+
+    msg.attach(MIMEText(text, "plain"))
+
     html = """\
     <!DOCTYPE html>
     <html lang = "pl-PL">
@@ -264,14 +278,24 @@ def five_s():
             </table>
         </body>
     </html>
-    """
-    signature = MIMEText(html, "html")
+    """.format(table_html=table_html)
+
+    msg.attach(MIMEText(html, "html"))
+
+    with open('/home/guldier/5S/IMG_3622.JPG',"rb") as attachent:
+        picture = MIMEBase("application","octet-stream")
+        picture.set_payload(attachent.read())
+
+    encoders.encode_base64(picture)
+    
+    picture.add_header(
+        "Content-Disposition",
+        'attachment',
+         filename='picture.JPG'
+    )
+
     connection.open()
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = "5S"
-    msg['From'] = 'damian.jadacki@linetech.pl'
-    msg['To'] = 'bartosz.wrobel@linetech.pl'
-    part1 = MIMEText(text, 'plain')
+    
 
     #msg = EmailMessage(
     #    '5S',
@@ -282,11 +306,14 @@ def five_s():
 
     #msg.attach_file('/home/guldier/5S/IMG_3622.JPG')
     #msg.attach_file(f'/home/guldier/5S/{filename_excel}')
-    msg.attach(part1)
-    msg.attach(signature)
-    s = smtplib.SMTP('linetech.nazwa.pl', 587)
-    s.login('damian.jadacki@linetech.pl','Dddddjjjjj12#$')
-    s.sendmail('damian.jadacki@linetech.pl', 'bartosz.wrobel@linetech.pl', msg.as_string())
-    s.quit()
+    #msg.attach(part1)
+    #msg.attach(signature)
+    msg.attach(picture)
+
+    context = ssl.create_default_context()
+    with  smtplib.SMTP_SSL('linetech.nazwa.pl', 587, context=context) as s:
+        s.login('damian.jadacki@linetech.pl','Dddddjjjjj12#$')
+        s.sendmail('damian.jadacki@linetech.pl', 'bartosz.wrobel@linetech.pl', msg.as_string())
+        s.quit()
     # msg.send()
     #connection.close()
