@@ -42,7 +42,7 @@ class Orders(models.Model):
 
 
     def __str__(self):
-        return f'{self.user} + {self.composition} - {self.quantity}szt.'
+        return f'{self.user} + {self.composition} - {self.quantity}szt. -  {self.order_date}'
     
 
 class Cart(models.Model):

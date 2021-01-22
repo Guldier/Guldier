@@ -112,7 +112,8 @@ def home (request):
         context.update({'money': money})
     except:
         pass    
-    #messages.warning(request,'We are sorry for the bug in the FIT day dish. This bug has been fixed. If you experience any other cases, please contact us')
+    #messages.success(request,'W dniach 24-27.12.2020 hotel i restauracja Trzy Korony będą nieczynne. Życzymy Państwu zdrowych i spokojnych Świąt Bożego Narodzenia.')
+    #messages.success(request,'Niedziela: Rosół z makaronem - Schab z grilla z pieczarkami, ziemniaki, kalafior z bułeczką tartą')
     return render(request, 'shop/home.html',context)
 
 def about (request):
