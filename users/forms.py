@@ -13,7 +13,7 @@ class UserRegisterForm(UserCreationForm):
 
 
 class MoneyMove(forms.ModelForm):    
-    profile = forms.ModelChoiceField(queryset=Profile.objects.all())
+    profile = forms.ModelChoiceField(queryset=Profile.objects.all(), label='Bartku i Grembi! Możesz wpisać nazwe i wyszuka daną osobę')
     class Meta:
         model = MoneyMovement
         fields = ['profile', 'moneyMove']
