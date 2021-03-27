@@ -10,6 +10,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'special' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -19,6 +20,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'main' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -28,6 +30,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'soup' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -37,6 +40,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'fastfood' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -46,6 +50,7 @@
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'pizza' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -55,6 +60,7 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
     {% if type == 'dumplig' %}
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
@@ -64,6 +70,17 @@
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
         <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
         <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
+    {% endif %}
+    {% if type == 'drinks' %}
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'all' %}">All</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'special'%}">Specials</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'main'%}">Mains</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'soup'%}">Soups</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'fastfood'%}">Fast food</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'pizza'%}">Pizza</a>
+        <a class="flex-sm-fill text-sm-center nav-link" href="{% url 'shop-select' 'dumplig'%}">Dumplings</a>
+        <a class="flex-sm-fill text-sm-center nav-link active" href="{% url 'shop-select' 'drinks'%}">Drinks</a>
     {% endif %}
   
 </nav>
