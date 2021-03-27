@@ -13,7 +13,7 @@ class UserRegisterForm(UserCreationForm):
 
 
 class MoneyMove(forms.ModelForm):    
-    profile = forms.ModelChoiceField(queryset=Profile.objects.all().order_by('user'), widget=FilteredSelectMultiple('profile',True))
+    profile = forms.ModelChoiceField(queryset=Profile.objects.all())
     class Meta:
         model = MoneyMovement
         fields = ['profile', 'moneyMove']
