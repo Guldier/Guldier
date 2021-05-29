@@ -19,8 +19,8 @@ from users.models import (
 )
 
 
-startTime = time(4,00)
-endTime = time(10,00)
+startTime = time(3,00)
+endTime = time(9,00)
 
 def check_time():
     now = datetime.now()
@@ -112,7 +112,7 @@ def home (request):
         context.update({'money': money})
     except:
         pass    
-    #messages.success(request,'W dniach 24-27.12.2020 hotel i restauracja Trzy Korony będą nieczynne. Życzymy Państwu zdrowych i spokojnych Świąt Bożego Narodzenia.')
+    #messages.success(request,'Dziś lista zamyka się o godzinie 11:30')
     #messages.success(request,'Niedziela: Rosół z makaronem - Schab z grilla z pieczarkami, ziemniaki, kalafior z bułeczką tartą')
     return render(request, 'shop/home.html',context)
 
