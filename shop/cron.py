@@ -49,7 +49,7 @@ def create_list():
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['damian.jadacki@linetech.pl','biuro@hotel-trzykorony.pl','michal.grebosz@linetech.pl','bartosz.wrobel@linetech.pl','lukasz.magda@linetech.pl'],
+        ['damian.jadacki@linetech.pl','biuro@hotel-trzykorony.pl','bartosz.wrobel@linetech.pl','lukasz.magda@linetech.pl'],
         fail_silently=False,
     )
 
