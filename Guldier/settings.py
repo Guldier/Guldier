@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1']
 
@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'payments',
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
@@ -143,3 +144,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = config.get('EMAIL_PASS')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
