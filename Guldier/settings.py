@@ -20,7 +20,6 @@ with open('/etc/config.json') as config_file:
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -28,14 +27,14 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1']
-
+ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1', 'localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'payments',
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
@@ -94,7 +93,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -113,7 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -126,7 +123,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
@@ -143,3 +139,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = config.get('EMAIL_PASS')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
+STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')

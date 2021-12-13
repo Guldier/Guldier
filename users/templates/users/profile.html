@@ -7,9 +7,12 @@
         {% else %}
             <a> You have: {{ user.profile.money|floatformat }} zł on your account</a>
         {% endif %}
+
     </div>
     <br>
     <div class="container">
+        <a href="{% url 'payments:top_up' %}"> Top up your account</a>
+        <br>
         <a href="{% url 'password_change' %}"> Change your password</a>
     </div>
 {% endblock content %}  
