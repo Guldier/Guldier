@@ -6,6 +6,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from users.models import Profile
+from urllib.parse import urljoin
 
 import stripe
 from rest_framework.utils import json
@@ -31,9 +32,9 @@ class CreateCheckoutSessionView(View):
     def post(self, request, *args, **kwargs):
         topup_value = request.POST.get('topup')
         intent_value = int(topup_value) * 100
-        YOUR_DOMAIN = 'http://127.0.0.1:8000'
+        YOUR_DOMAIN = settings.ALLOWED_HOSTS[2]
         user = request.user
-
+        success_url = urljoin('http://' + YOUR_DOMAIN + ':8000', '/profile')
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {
@@ -51,8 +52,8 @@ class CreateCheckoutSessionView(View):
                 "user_profile_id": user.profile.id
             },
             mode='payment',
-            success_url=YOUR_DOMAIN + '/profile',
-            cancel_url=YOUR_DOMAIN + '/payments/cancel',
+            success_url=success_url,
+            cancel_url='http://' + YOUR_DOMAIN + '/payments/cancel',
         )
 
         return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})

@@ -11,11 +11,11 @@
       <div class="product">
         <!-- <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" /> -->
         <div class="description">
-          <h3>{{ product }}</h3>
+          <h3>Doładowanie punktów</h3>
           <h5>{{ price }}</h5>
         </div>
       </div>
-      <form action="/payments/create-checkout-session/" method="POST">
+      <form action="{% url 'payments:create_checkout_session' %}" method="POST">
         {% csrf_token %}
         <input type="number" name="topup"/>
         <button type="submit" id="checkout-button">Checkout</button>
