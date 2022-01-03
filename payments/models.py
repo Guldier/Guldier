@@ -1,7 +1,8 @@
 from django.db import models
-from users.models import Profile
 from django.contrib.auth.models import User
-
+from model_utils.fields import StatusField
+from model_utils import Choices
+from users.models import Profile
 
 
 class Price(models.Model):
@@ -12,12 +13,8 @@ class Price(models.Model):
 
 
 class TopUp(models.Model):
-    STATUS = [
-        ('new', 'new'),
-        ('pending', 'pending'),
-        ('success', 'success'),
-        ('reject', 'reject')
-    ]
+    STATUS = Choices('new', 'pending', 'success', 'reject')
+    status = StatusField()
 
     amount_intent_payment = models.IntegerField(default=0)
     amount_from_stripe = models.IntegerField(null=True)
@@ -26,4 +23,3 @@ class TopUp(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
     payment_status = models.CharField(max_length=10, choices=STATUS, default='new')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
