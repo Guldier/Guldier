@@ -13,17 +13,17 @@ class Price(models.Model):
 
 class TopUp(models.Model):
     STATUS = [
-        ('new', 'new'),
-        ('pending', 'pending'),
-        ('success', 'success'),
-        ('reject', 'reject')
+        ('1', 'new'),
+        ('2', 'pending'),
+        ('3', 'success'),
+        ('4', 'reject')
     ]
 
-    amount_intent_payment = models.IntegerField(default=0)
+    amount_intent_payment = models.IntegerField(default=0) #to delete without double check
     amount_from_stripe = models.IntegerField(null=True)
     currency = models.CharField(default='pln', max_length=3)
     date_intent_payment = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    payment_status = models.CharField(max_length=10, choices=STATUS, default='new')
+    payment_status = models.CharField(max_length=1, choices=STATUS, default='new')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 

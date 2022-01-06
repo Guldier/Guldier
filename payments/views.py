@@ -38,7 +38,7 @@ class CreateCheckoutSessionView(View):
             line_items=[
                 {
                     'price_data': {
-                        'currency': 'usd',
+                        'currency': 'pln',
                         'unit_amount': intent_value,
                         'product_data': {
                             'name': 'wplata'
@@ -48,7 +48,7 @@ class CreateCheckoutSessionView(View):
                 },
             ],
             metadata={
-                "user_profile_id": user.profile.id
+                "user_profile_pk": user.profile.pk
             },
             mode='payment',
             success_url=YOUR_DOMAIN + '/profile',
@@ -56,7 +56,6 @@ class CreateCheckoutSessionView(View):
         )
 
         return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})
-
 
 class SuccessView(TemplateView):
     template_name = 'success.html'
@@ -87,16 +86,20 @@ def stripe_webhook(request, customer_email=None):
     if event.type == 'checkout.session.completed':
         completed_checkout_session = event.data.object
         amount_received = int(completed_checkout_session.amount_total / 100)
-        user_profile_id = completed_checkout_session.metadata.user_profile_id
-        profile = Profile.objects.get(pk=user_profile_id)
-        profile.money += amount_received
-        profile.save()
+        user_profile_pk = completed_checkout_session.metadata.user_profile_pk
+        try:
+            profile = Profile.objects.get(pk=user_profile_pk)
+            profile.money += amount_received
+            profile.save()
+        except profile.DoesNotExist:
+            print("An exception occurred")  
+
 
         # send_mail(
         #     subject='Your account has been topped up',
         #     message='Thanks for your purchase',
         #     recipient_list=[customer_email],
         #     from_email='some_email@test.com',
-        # )
+        # )2
     # # Passed signature verification
     return HttpResponse(status=200)

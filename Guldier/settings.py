@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -147,3 +147,5 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
+# STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
+STRIPE_WEBHOOK_SECRET = 'whsec_Ee7SMjofjoqfTzRoTAIk2EMnQscuhr5f'
