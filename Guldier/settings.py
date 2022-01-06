@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
-    'payments',
+    'payments.apps.PaymentsConfig',
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
