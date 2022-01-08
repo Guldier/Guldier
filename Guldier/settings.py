@@ -21,7 +21,6 @@ with open('/etc/config.json') as config_file:
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
-environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -34,6 +33,7 @@ DEBUG = True
 
 env = environ.Env()
 environ.Env.read_env(BASE_DIR / '.env')
+# in .env ALLOWED_HOSTS=...,...,...etc.
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition

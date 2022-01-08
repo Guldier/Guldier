@@ -5,10 +5,11 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from users.models import Profile
-from urllib.parse import urljoin
+
 
 import stripe
 from rest_framework.utils import json
+from urllib.parse import urljoin
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -88,7 +89,6 @@ def stripe_webhook(request):
 
     if event.type == 'checkout.session.completed':
         completed_checkout_session = event.data.object
-        print(completed_checkout_session)
         amount_received = int(completed_checkout_session.amount_total / 100)
         user_profile_id = completed_checkout_session.metadata.user_profile_id
         profile = Profile.objects.get(pk=user_profile_id)
