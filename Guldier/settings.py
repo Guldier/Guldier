@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+from urllib.parse import urljoin
 
+import environ
 from pathlib import Path
 import os
 import json
@@ -29,7 +31,10 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1', 'localhost']
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / '.env')
+# in .env ALLOWED_HOSTS=...,...,...etc.
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
 
