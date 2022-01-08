@@ -17,7 +17,8 @@
       </div>
       <form action="{% url 'payments:create_checkout_session' %}" method="POST">
         {% csrf_token %}
-        <input type="number" name="topup"/>
+        <!-- <input type="number" name="topup"/> -->
+        {{ form }}
         <button type="submit" id="checkout-button">Checkout</button>
       </form>
     </section>

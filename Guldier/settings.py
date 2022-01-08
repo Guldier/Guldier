@@ -39,7 +39,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 # Application definition
 
 INSTALLED_APPS = [
-    'payments',
+    'payments.apps.PaymentsConfig',
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
