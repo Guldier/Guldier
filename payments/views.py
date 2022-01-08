@@ -6,10 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 from users.models import Profile
 
-
-import stripe
 from rest_framework.utils import json
 from urllib.parse import urljoin
+import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
