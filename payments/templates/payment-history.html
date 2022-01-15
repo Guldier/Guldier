@@ -1,0 +1,43 @@
+{% extends 'shop/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}    
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Payment history</legend>
+                {{ form|crispy }}
+            </fieldset>
+                  <table class="demo">
+            <thead>
+            <tr>
+                <th>Payment date</th>
+                <th>Amount</th>
+                <th>Currency</th>
+                <th>Status</th>
+                <th>Identyfication number</th>
+            </tr>
+            </thead>
+
+<!--            {% for room in all_rooms %}-->
+<!--            <tbody>-->
+<!--            <tr>-->
+<!--                <td><a href = "/room/{{ room.id }}/">{{ room.room_name }}</a></td>-->
+<!--                <td>{{ room.room_places }}</td>-->
+<!--                {% if room.reserved %}-->
+<!--                    <td>Booked</td>-->
+<!--                {% else %}-->
+<!--                    <td>Available</td>-->
+<!--                {% endif %}-->
+<!--                <td>{{ room.project_available }}</td>-->
+<!--                <td><button><a href="/room_modify/{{ room.id }}/">Edit room</a> </button></td>-->
+<!--                <td><button><a href="/room_delete/{{ room.id }}/">Delete room</a> </button></td>-->
+<!--                <td><button><a href="/room_reservation/{{ room.id }}/">Reservation of room</a> </button></td>-->
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--            {% endfor %}-->
+        </table>
+
+        </form>
+    </div>
+{% endblock content %}  

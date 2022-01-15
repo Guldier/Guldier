@@ -1,11 +1,11 @@
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
-
 from payments import forms as pay_forms
 from payments import schemas as pay_schemas
 from urllib.parse import urljoin
@@ -102,6 +102,12 @@ class WebhookView(View):
             profile.money += amount_received
             profile.save()
         elif event.type == 'payment_intent.payment_failed':
-            pass
-        # Passed signature verification
+            return render(request, template_name='payment-failure.html')
+
         return HttpResponse(status=200)
+
+
+class PaymentHistoryView(View):
+    def get(self, request, *args, **kwargs):
+
+        return render(request, template_name='payment-history.html')
