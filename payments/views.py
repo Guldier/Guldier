@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
@@ -40,26 +41,28 @@ class CreateCheckoutSessionView(View):
         else:
             return redirect('payments:top_up')
         # assign all values needed to open a checkout session with Stripe
-        intent_value = int(topup_value) * 100
+        # get success and cancel url
         schema = 'http://'
         host = request.META['HTTP_HOST']
         hostname = host.split(':')[0]
         port = host.split(':')[1]
         success_url = urljoin(schema + hostname + ':' + port, '/profile')
         cancel_url = urljoin(schema + hostname + ':' + port, '/payments/cancel')
-        user = request.user
-        topup_pk = pay_models.TopUp.objects.create(user=user).pk
-        currency = 'pln'
-        name = 'Top up'
+        # get line items json
+        intent_value = int(topup_value) * 100
         quantity = 1
-        # create objects and then turn them into jsons with marshmallow
+        name = 'Top up'
+        currency = 'pln'
         product_data = pay_schemas.ProductData(name=name)
         price_data = pay_schemas.PriceData(currency=currency, unit_amount=intent_value, product_data=product_data)
         line_items = pay_schemas.LineItems(price_data=price_data, quantity=quantity)
-        metadata = pay_schemas.Metadata(user_profile_id=user.profile.id, topup_pk=topup_pk)
-        payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         line_items_json = pay_schemas.LineItemsSchema().dump(line_items)
+        # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
+        user = request.user
+        topup_pk = pay_models.TopUp.objects.create(user=user).pk
+        metadata = pay_schemas.Metadata(topup_pk=topup_pk)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
+        payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
@@ -106,17 +109,15 @@ class WebhookView(View):
         #get payload and type of object that came in the event
         event_body, object_type = get_event_payload_and_type(event)
         #only checkout_session, payment_intent and charge objects come back with metadata
-        if event_body.metadata.topup_pk:
+        if getattr(event_body.metadata, 'topup_pk', None):
             topup = get_transaction_record(event_body) # find transaction's record in database
             save_id_and_status(event_body, topup, object_type) # save event's id and status
             if event.type == 'payment_intent.created':
                 save_amount_data(event_body, topup) 
                 is_live_mode(event_body, topup) # flags if test or live
             elif event.type == 'payment_intent.succeeded':
-                increase_balance(event_body) # add funds to user's account
-        elif event.type in ['customer.created', 'customer.updated']:
-            save_email(event_body) # only customer object has e-mail in its body
-        topup.save()
+                increase_balance(event_body, topup) # add funds to user's account
+            topup.save()
         return HttpResponse(status=200)
 
 def get_event_payload_and_type(event):
@@ -127,7 +128,7 @@ def get_event_payload_and_type(event):
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
     try:
-        topup = pay_models.TopUp.objects.get(payment_id=topup_pk)
+        topup = pay_models.TopUp.objects.get(pk=topup_pk)
         return topup
     except pay_models.TopUp.DoesNotExist:
         print('record with this pk does not exist') #TODO handle error
@@ -158,9 +159,9 @@ def is_live_mode(event_body, topup):
     topup.live_mode = event_body.livemode
     return topup
 
-def increase_balance(event_body):
+def increase_balance(event_body, topup):
     amount_received = int(event_body.amount / 100)
-    user_profile_id = event_body.metadata.user_profile_id
-    user_profile = Profile.objects.get(pk=user_profile_id)
-    user_profile.money += amount_received
-    user_profile.save()
+    user = topup.user
+    profile = Profile.objects.get(user=user)
+    profile.money = F('money') + amount_received
+    profile.save()
