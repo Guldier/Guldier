@@ -1,5 +1,5 @@
 from django.conf import settings
-# from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
@@ -33,12 +33,13 @@ class ProductLandingPageView(View):
 class CreateCheckoutSessionView(View):
 
     def post(self, request, *args, **kwargs):
+        # get the amount that customer wants to top up his account with
         form = pay_forms.TopUpForm(request.POST)
         if form.is_valid():
             topup_value = form.cleaned_data['top_up_amount']
         else:
             return redirect('payments:top_up')
-        topup_pk = get_new_topup_pk()
+        # assign all values needed to open a checkout session with Stripe
         intent_value = int(topup_value) * 100
         schema = 'http://'
         host = request.META['HTTP_HOST']
@@ -47,9 +48,11 @@ class CreateCheckoutSessionView(View):
         success_url = urljoin(schema + hostname + ':' + port, '/profile')
         cancel_url = urljoin(schema + hostname + ':' + port, '/payments/cancel')
         user = request.user
+        topup_pk = pay_models.TopUp.objects.create(user=user).pk
         currency = 'pln'
-        name = 'wplata'
+        name = 'Top up'
         quantity = 1
+        # create objects and then turn them into jsons with marshmallow
         product_data = pay_schemas.ProductData(name=name)
         price_data = pay_schemas.PriceData(currency=currency, unit_amount=intent_value, product_data=product_data)
         line_items = pay_schemas.LineItems(price_data=price_data, quantity=quantity)
@@ -58,6 +61,7 @@ class CreateCheckoutSessionView(View):
         line_items_json = pay_schemas.LineItemsSchema().dump(line_items)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
+        # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 line_items_json,
@@ -68,7 +72,7 @@ class CreateCheckoutSessionView(View):
             success_url=success_url,
             cancel_url=cancel_url,
         )
-
+        # redirect to Stripe's checkout session 
         return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})
 
 
@@ -99,159 +103,60 @@ class WebhookView(View):
             # Invalid signature
             return HttpResponse(status=400)
 
-        if event.type == 'payment_intent.created':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_amount_data(event_body, topup)
-            save_user(event_body, topup)
-            is_live_mode(event_body, topup)
-            save_email(event_body, topup)
-        elif event.type == 'payment_intent.succeeded':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            increase_balance(event_body)
-            save_email(event_body, topup)
-        elif event.type == 'payment_intent.payment_failed':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'payment_intent.requires_action':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'payment_intent.processing':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'payment_intent.cancelled':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'charge.failed':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-        elif event.type == 'charge.pending':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-        elif event.type == 'charge.refunded':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-            # TODO --> design refund flow
-        elif event.type == 'charge.succeeded':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'checkout.session.expired':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            save_email(event_body, topup)
-        elif event.type == 'checkout.session.completed':
-            event_body, topup, object_type = object_check(event)
-            save_body(event_body, topup, object_type)
-            save_status(event_body, topup, object_type)
-            save_id(event_body, topup, object_type)
-            breakpoint()
-
+        #get payload and type of object that came in the event
+        event_body, object_type = get_event_payload_and_type(event)
+        #only checkout_session, payment_intent and charge objects come back with metadata
+        if event_body.metadata.topup_pk:
+            topup = get_transaction_record(event_body) # find transaction's record in database
+            save_id_and_status(event_body, topup, object_type) # save event's id and status
+            if event.type == 'payment_intent.created':
+                save_amount_data(event_body, topup) 
+                is_live_mode(event_body, topup) # flags if test or live
+            elif event.type == 'payment_intent.succeeded':
+                increase_balance(event_body) # add funds to user's account
+        elif event.type in ['customer.created', 'customer.updated']:
+            save_email(event_body) # only customer object has e-mail in its body
+        topup.save()
         return HttpResponse(status=200)
 
-
-def get_new_topup_pk():
-    new_topup = pay_models.TopUp.objects.create()
-    new_topup_pk = new_topup.pk
-    return new_topup_pk
-
-def object_check(event):
+def get_event_payload_and_type(event):
     event_body = event.data.object
     object_type = event_body.object
+    return event_body, object_type
+
+def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
     try:
         topup = pay_models.TopUp.objects.get(payment_id=topup_pk)
+        return topup
     except pay_models.TopUp.DoesNotExist:
-        topup = pay_models.TopUp.objects.create() #throw error
-    return event_body, topup, object_type
+        print('record with this pk does not exist') #TODO handle error
+        return None
 
-def save_body(event_body, topup, object_type):
-    if event_body:
-        if object_type == 'checkout.session':
-            topup.checkout_session_body = event_body
-        elif object_type == 'payment_intent':
-            topup.payment_intent_body = event_body
-        elif object_type == 'charge':
-            topup.charge_body = event_body
-        elif object_type == 'customer':
-            topup.customer_body = event_body
-        topup.save()
-
-def save_status(event_body, topup, object_type):
-    event_body_status = event_body.status
-    if event_body_status:
-        if object_type == 'checkout.session':
-            topup.checkout_session_status = event_body_status
-        elif object_type == 'payment_intent':
-            topup.payment_intent_status = event_body_status
-        elif object_type == 'charge':
-            topup.charge_status = event_body_status
-        topup.save()
-
-def save_id(event_body, topup, object_type):
-    event_body_id = event_body.id
-    if event_body_id:
-        if object_type == 'checkout.session':
-            topup.checkout_session_id = event_body_id
-        elif object_type == 'payment_intent':
-            topup.payment_intent_id = event_body_id
-        elif object_type == 'charge':
-            topup.charge_id = event_body_id
-        elif object_type == 'customer':
-            topup.customer_id = event_body_id
-        topup.save()
+def save_id_and_status(event_body, topup, object_type):
+    if object_type == 'checkout.session':
+        topup.checkout_session_status = event_body.status
+        topup.checkout_session_id = event_body.id
+    elif object_type == 'payment_intent':
+        topup.payment_intent_status = event_body.status
+        topup.payment_intent_id = event_body.id
+    elif object_type == 'charge':
+        topup.charge_status = event_body.status
+        topup.charge_id = event_body.id
+    return topup
 
 def save_email(event_body, topup):
-    customer_id = event_body.customer
-    if customer_id:
-        customer = stripe.Customer.retrieve(customer_id)
-        email = customer.email
-        topup.customer_email = email
-        topup.save()
+    topup.customer_email = event_body.email
+    return topup
 
 def save_amount_data(event_body, topup):
-    amount = event_body.amount
-    currency = event_body.currency
-    if amount:
-        topup.amount = amount
-        topup.save()
-    if currency:
-        topup.currency = currency
-        topup.save()
+    topup.amount = event_body.amount
+    topup.currency = event_body.currency
+    return topup
 
 def is_live_mode(event_body, topup):
-    live_mode = event_body.livemode
-    if live_mode:
-        topup.live_mode = live_mode
-        topup.save()
+    topup.live_mode = event_body.livemode
+    return topup
 
 def increase_balance(event_body):
     amount_received = int(event_body.amount / 100)
@@ -259,13 +164,3 @@ def increase_balance(event_body):
     user_profile = Profile.objects.get(pk=user_profile_id)
     user_profile.money += amount_received
     user_profile.save()
-
-def save_user(event_body, topup):
-    user_profile_id = event_body.metadata.user_profile_id
-    if user_profile_id:
-        try:
-            profile = Profile.objects.get(pk=user_profile_id)
-            topup.user = profile.user
-            topup.save()
-        except Profile.DoesNotExist:
-            print('error') #TODO:handle error

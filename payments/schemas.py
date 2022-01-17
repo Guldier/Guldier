@@ -21,7 +21,7 @@ class LineItems:
 
 class Metadata:
     def __init__(self, user_profile_id, topup_pk):
-        self.user_profile_id = user_profile_id
+        # self.user_profile_id = user_profile_id
         self.topup_pk =  topup_pk
         
 
@@ -47,7 +47,7 @@ class LineItemsSchema(Schema):
 
 class MetadataSchema(Schema):    
     user_profile_id = fields.Int()
-    topup_pk = fields.Int()
+    # topup_pk = fields.Int()
 
 
 class PaymentIntentDataSchema(Schema):
