@@ -20,9 +20,14 @@ class LineItems:
 
 
 class Metadata:
-    def __init__(self, user_profile_id):
-        self.user_profile_id = user_profile_id
+    def __init__(self, topup_pk):
+        self.topup_pk =  topup_pk
         
+
+class PaymentIntentData:
+    def __init__(self, metadata):
+        self.metadata = metadata
+
 
 class ProductDataSchema(Schema):
     name = fields.Str()
@@ -39,5 +44,9 @@ class LineItemsSchema(Schema):
     quantity = fields.Int()
 
 
-class MetadataSchema(Schema):    
-    user_profile_id = fields.Int()
+class MetadataSchema(Schema):
+    topup_pk = fields.Int()
+
+
+class PaymentIntentDataSchema(Schema):
+    metadata = fields.Nested(MetadataSchema)
