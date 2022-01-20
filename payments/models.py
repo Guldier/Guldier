@@ -14,8 +14,6 @@ class Price(models.Model):
 
 class TopUp(models.Model):
     STATUS = Choices('new', 'pending', 'success', 'reject')
-    status = StatusField()
-
     amount_intent_payment = models.IntegerField(default=0)
     amount_from_stripe = models.IntegerField(null=True)
     currency = models.CharField(default='pln', max_length=3)

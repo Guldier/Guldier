@@ -1,15 +1,16 @@
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from payments import forms as pay_forms
 from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
+from payments.models import TopUp
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -107,7 +108,22 @@ class WebhookView(View):
         return HttpResponse(status=200)
 
 
-class PaymentHistoryView(View):
-    def get(self, request, *args, **kwargs):
 
-        return render(request, template_name='payment-history.html')
+@method_decorator(login_required, name='dispatch')
+class PaymentHistoryView(View):
+        def get(self, request):
+            current_user = request.user
+            print(current_user.id)
+            profile = Profile.objects.get(pk=current_user.id)
+            print(profile)
+        # current_user = request.user
+
+        # template_name = 'payment-history.html'
+
+        # profile_name = Profile(user=request.user)
+        # profile = Profile.objects.get(pk=user_profile_id)
+        # print(profile_name)
+        # wplata = TopUp.objects.all()
+        # print(wplata)
+
+            return render(request, template_name='payment-history.html')
