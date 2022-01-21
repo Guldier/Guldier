@@ -1,43 +1,30 @@
 {% extends 'shop/base.html' %}
-{% load crispy_forms_tags %}
 {% block content %}    
     <div class="content-section">
-        <form method="POST">
-            {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Payment history</legend>
-                {{ form|crispy }}
             </fieldset>
-                  <table class="demo">
+        <table class="table">
             <thead>
             <tr>
                 <th>Payment date</th>
                 <th>Amount</th>
-                <th>Currency</th>
                 <th>Status</th>
-                <th>Identyfication number</th>
+                <th>Identification number</th>
             </tr>
             </thead>
+                {% for payment_history in user_payments %}
+                     <tr>
+                         <td><p>{{ payment_history.date_updated }}</p></td>
+                         <td><p>{{ payment_history.amount }} {{ payment_history.currency }}</p></td>
+                         <td><p>{{ payment_history.charge_status }}</p></td>
+                         <td><p>{{ payment_history.payment_intent_id }}</p></td>
+                     </tr>
+                {% endfor %}
 
-<!--            {% for room in all_rooms %}-->
-<!--            <tbody>-->
-<!--            <tr>-->
-<!--                <td><a href = "/room/{{ room.id }}/">{{ room.room_name }}</a></td>-->
-<!--                <td>{{ room.room_places }}</td>-->
-<!--                {% if room.reserved %}-->
-<!--                    <td>Booked</td>-->
-<!--                {% else %}-->
-<!--                    <td>Available</td>-->
-<!--                {% endif %}-->
-<!--                <td>{{ room.project_available }}</td>-->
-<!--                <td><button><a href="/room_modify/{{ room.id }}/">Edit room</a> </button></td>-->
-<!--                <td><button><a href="/room_delete/{{ room.id }}/">Delete room</a> </button></td>-->
-<!--                <td><button><a href="/room_reservation/{{ room.id }}/">Reservation of room</a> </button></td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--            {% endfor %}-->
         </table>
-
-        </form>
+        <a href="/profile">
+        <button>Back to profile</button>
+        </a>
     </div>
 {% endblock content %}  

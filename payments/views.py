@@ -172,18 +172,12 @@ def increase_balance(event_body, topup):
 @method_decorator(login_required, name='dispatch')
 class PaymentHistoryView(View):
         def get(self, request):
-            current_user = request.user
-            print(current_user.id)
-            profile = Profile.objects.get(pk=current_user.id)
-            print(profile)
-        # current_user = request.user
+            profile = Profile.objects.get(user=request.user)
+            user_payments = TopUp.objects.filter(user=profile.user)
 
-        # template_name = 'payment-history.html'
+            return render(request, template_name='payment-history.html',
+                          context={'user_payments': user_payments})
 
-        # profile_name = Profile(user=request.user)
-        # profile = Profile.objects.get(pk=user_profile_id)
-        # print(profile_name)
-        # wplata = TopUp.objects.all()
-        # print(wplata)
 
-            return render(request, template_name='payment-history.html')
+
+
