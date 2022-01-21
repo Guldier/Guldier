@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -174,10 +175,12 @@ class PaymentHistoryView(View):
         def get(self, request):
             profile = Profile.objects.get(user=request.user)
             user_payments = TopUp.objects.filter(user=profile.user)
+            paginator = Paginator(user_payments, 10)
+
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
 
             return render(request, template_name='payment-history.html',
-                          context={'user_payments': user_payments})
-
-
+                          context={'page_obj': page_obj})
 
 
