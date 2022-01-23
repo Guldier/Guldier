@@ -18,8 +18,15 @@ class TopUp(models.Model):
     charge_status = models.CharField(max_length=50, blank=True)
     #details taken from payment_intent.created event
     currency = models.CharField(max_length=3, blank=True)
-    amount = models.IntegerField(null=True)
+    amount = models.IntegerField(null=True, )
     live_mode = models.BooleanField(null=True)
+    payments = models.Manager()
+    objects = models.Manager()
 
     def __str__(self, *args, **kwargs):
         return str(self.pk)
+
+    @property
+    def full_amount(self):
+        full_amount = self.amount / 100
+        return full_amount

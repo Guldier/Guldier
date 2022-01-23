@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import F
@@ -23,7 +24,9 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
-class ProductLandingPageView(View):
+class ProductLandingPageView(LoginRequiredMixin, View):
+
+    related_field = 'redirect_to'
 
     def get(self, request, *args, **kwargs):
         form = pay_forms.TopUpForm()
@@ -62,7 +65,7 @@ class CreateCheckoutSessionView(View):
         line_items_json = pay_schemas.LineItemsSchema().dump(line_items)
         # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
         user = request.user
-        topup_pk = pay_models.TopUp.objects.create(user=user).pk
+        topup_pk = pay_models.TopUp.payments.create(user=user).pk
         metadata = pay_schemas.Metadata(topup_pk=topup_pk)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
@@ -131,7 +134,7 @@ def get_event_payload_and_type(event):
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
     try:
-        topup = pay_models.TopUp.objects.get(pk=topup_pk)
+        topup = pay_models.TopUp.payments.get(pk=topup_pk)
         return topup
     except pay_models.TopUp.DoesNotExist:
         print('record with this pk does not exist') #TODO handle error
@@ -174,7 +177,9 @@ def increase_balance(event_body, topup):
 class PaymentHistoryView(View):
         def get(self, request):
             profile = Profile.objects.get(user=request.user)
-            user_payments = TopUp.objects.filter(user=profile.user)
+            user_payments = TopUp.payments.filter(user=profile.user)
+            for payment in user_payments:
+                payment.amount = int(payment.amount / 100)
             paginator = Paginator(user_payments, 10)
 
             page_number = request.GET.get('page')
