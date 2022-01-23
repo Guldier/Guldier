@@ -27,4 +27,5 @@ class TopUp(models.Model):
         return str(self.pk)
 
     def amount_full_units(self):
-        return self.amount / 100
+        if self.amount:
+            return self.amount / 100

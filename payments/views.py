@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views import View
@@ -52,7 +52,7 @@ class CreateCheckoutSessionView(View):
         host = request.META['HTTP_HOST']
         hostname = host.split(':')[0]
         port = host.split(':')[1]
-        success_url = urljoin(schema + hostname + ':' + port, '/profile')
+        success_url = urljoin(schema + hostname + ':' + port, '/payments/success')
         cancel_url = urljoin(schema + hostname + ':' + port, '/payments/cancel')
         # get line items json
         intent_value = int(topup_value) * 100
@@ -176,8 +176,8 @@ def increase_balance(event_body, topup):
 @method_decorator(login_required, name='dispatch')
 class PaymentHistoryView(View):
         def get(self, request):
-            profile = Profile.objects.get(user=request.user)
-            user_payments = TopUp.payments.filter(user=profile.user)
+            # profile = Profile.objects.get(user=request.user)
+            user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
             paginator = Paginator(user_payments, 10)
 
             page_number = request.GET.get('page')
