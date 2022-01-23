@@ -178,8 +178,6 @@ class PaymentHistoryView(View):
         def get(self, request):
             profile = Profile.objects.get(user=request.user)
             user_payments = TopUp.payments.filter(user=profile.user)
-            for payment in user_payments:
-                payment.amount = int(payment.amount / 100)
             paginator = Paginator(user_payments, 10)
 
             page_number = request.GET.get('page')

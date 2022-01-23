@@ -26,7 +26,5 @@ class TopUp(models.Model):
     def __str__(self, *args, **kwargs):
         return str(self.pk)
 
-    @property
-    def full_amount(self):
-        full_amount = self.amount / 100
-        return full_amount
+    def amount_full_units(self):
+        return self.amount / 100
