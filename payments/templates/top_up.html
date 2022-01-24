@@ -2,11 +2,9 @@
 {% load crispy_forms_tags %}
 {% block content %}
     <div class="content-section">
-            <form class="form-group" action="{% url 'payments:create_checkout_session' %}" method="POST">
-              {% csrf_token %}
-              <!-- <input type="number" name="topup"/> -->
-              {{ form }}
-              <button type="submit" id="checkout-button">Checkout</button>
+        <form class="form-group" action="{% url 'payments:create_checkout_session' %}" method="POST">
+            {% csrf_token %}
+            {% crispy form %}
         </form>
     </div>
 {% endblock content %}
