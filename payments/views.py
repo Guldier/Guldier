@@ -186,5 +186,3 @@ class PaymentHistoryView(View):
 
             return render(request, template_name='payment-history.html',
                           context={'page_obj': page_obj})
-
-

@@ -3,6 +3,11 @@ from django.contrib.auth.models import User
 from users.models import Profile
 
 
+class TopUpDateManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-date_updated')
+
+
 class TopUp(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -20,12 +25,12 @@ class TopUp(models.Model):
     currency = models.CharField(max_length=3, blank=True)
     amount = models.IntegerField(null=True, )
     live_mode = models.BooleanField(null=True)
-    payments = models.Manager()
+    payments = TopUpDateManager()
     objects = models.Manager()
 
     def __str__(self, *args, **kwargs):
         return str(self.pk)
 
-    def amount_full_units(self):
-        if self.amount:
-            return self.amount / 100
+#     def amount_full_units(self):
+#         if self.amount:
+#             return self.amount / 100
