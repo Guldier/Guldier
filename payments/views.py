@@ -168,21 +168,25 @@ def is_live_mode(event_body, topup):
 def increase_balance(event_body, topup):
     amount_received = int(event_body.amount / 100)
     user = topup.user
-    profile = Profile.objects.get(user=user)
+    try:
+        profile = Profile.objects.get(user=user)
+    except ObjectDoesNotExist:
+        return render(request, template_name='payment_failure.html')
+
     profile.money = F('money') + amount_received
     profile.save()
 
 
 @method_decorator(login_required, name='dispatch')
 class PaymentHistoryView(View):
-        def get(self, request):
-            user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
-            for payment in user_payments:
-                payment.amount = payment.amount / 100
-            paginator = Paginator(user_payments, 10)
+    def get(self, request):
+        user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
+        for payment in user_payments:
+            payment.amount = payment.amount / 100
+        paginator = Paginator(user_payments, 10)
 
-            page_number = request.GET.get('page')
-            page_obj = paginator.get_page(page_number)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-            return render(request, template_name='payment-history.html',
-                          context={'page_obj': page_obj})
+        return render(request, template_name='payment-history.html',
+                      context={'page_obj': page_obj})

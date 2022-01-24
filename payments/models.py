@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from users.models import Profile
 
 
@@ -23,7 +24,7 @@ class TopUp(models.Model):
     charge_status = models.CharField(max_length=50, blank=True)
     #details taken from payment_intent.created event
     currency = models.CharField(max_length=3, blank=True)
-    amount = models.IntegerField(null=True, )
+    amount = models.IntegerField(null=True, validators=[MinValueValidator(15)])
     live_mode = models.BooleanField(null=True)
     payments = TopUpDateManager()
     objects = models.Manager()
