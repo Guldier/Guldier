@@ -16,7 +16,8 @@
                 {% for payment in page_obj %}
                      <tr>
                          <td><p>{{ payment.date_updated }}</p></td>
-                         <td><p>{{ payment.amount_full_units }} {{ payment.currency }}</p></td>
+                         <td><p>{{ payment.amount }} {{ payment.currency }}</p></td>
+                         <!-- <td><p>{{ payment.amount_full_units }} {{ payment.currency }}</p></td> -->
                          <td><p>{{ payment.payment_intent_status }}</p></td>
                          <td><p>{{ payment.pk }}</p></td>
                      </tr>

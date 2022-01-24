@@ -176,8 +176,9 @@ def increase_balance(event_body, topup):
 @method_decorator(login_required, name='dispatch')
 class PaymentHistoryView(View):
         def get(self, request):
-            # profile = Profile.objects.get(user=request.user)
             user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
+            for payment in user_payments:
+                payment.amount = payment.amount / 100
             paginator = Paginator(user_payments, 10)
 
             page_number = request.GET.get('page')

@@ -37,7 +37,7 @@
                      <div class="navbar-nav">
                         {% if user.is_authenticated %}
                             <a class="nav-item nav-link" style="color: #ffffff" href="{% url 'logout' %}">Logout</a>
-                            <a class="nav-item nav-link" style="color: #ffffff" href="{% url 'profile' %}">{{ user.username }} : {{money|floatformat}}zł</a>
+                            <a class="nav-item nav-link" style="color: #ffffff" href="{% url 'profile' %}">{{ user.username }} : {{user.profile.money|floatformat}}zł</a>
                         {% else %}
                             <a class="nav-item nav-link" style="color: #ffffff" href="{% url 'login' %}">Login</a>
                             <a class="nav-item nav-link" style="color: #ffffff" href="{% url 'register' %}">Register</a>
