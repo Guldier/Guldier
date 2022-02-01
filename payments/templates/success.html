@@ -1,14 +1,11 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
-=======
-Super
->>>>>>> d4a374e7b046e434d23b554a94e02012bfcc4021
+{% extends 'shop/base.html' %}
+{% block content %}
+<div class="content-section">
+    <h5>We have received your payment successfully. Enjoy your meals!</h5>
+    <a href="{% url 'shop-home' %}"> Go to the main page</a>
+    <br>
+    <a href="{% url 'payments:payment_history' %}"> See your payment history</a>
+    <br>
+    <a href="{% url 'payments:top_up' %}"> Top up again</a>
+</div>
+{% endblock content %}

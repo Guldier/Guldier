@@ -1,14 +1,9 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
-=======
-Słabo
->>>>>>> d4a374e7b046e434d23b554a94e02012bfcc4021
+{% extends 'shop/base.html' %}
+{% block content %}
+    <div class="content-section">
+        <h5>Sorry, something went wrong.</h5>
+        <a href="{% url 'payments:top_up' %}"> Start over</a>
+        <br>
+        <a href="{% url 'shop-home' %}"> Go to the main page</a>
+</div>
+{% endblock content %}

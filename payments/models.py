@@ -1,29 +1,37 @@
 from django.db import models
-from users.models import Profile
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
+from users.models import Profile
 
 
-
-class Price(models.Model):
-    stripe_id = models.CharField(max_length=32)
-    # unit_amount = models.IntegerField(default=0)
-    # currency = models.CharField(max_length=3)
-    # def get_display_price(self):
+class TopUpDateManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-date_updated')
 
 
 class TopUp(models.Model):
-    STATUS = [
-        ('new', 'new'),
-        ('pending', 'pending'),
-        ('success', 'success'),
-        ('reject', 'reject')
-    ]
-
-    amount_intent_payment = models.IntegerField(default=0)
-    amount_from_stripe = models.IntegerField(null=True)
-    currency = models.CharField(default='pln', max_length=3)
-    date_intent_payment = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    payment_status = models.CharField(max_length=10, choices=STATUS, default='new')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    #details taken from checkout.session object
+    checkout_session_id = models.CharField(max_length=250, blank=True)
+    checkout_session_status = models.CharField(max_length=50, blank=True)
+    #details taken from payment_intent object
+    payment_intent_id = models.CharField(max_length=250, blank=True)
+    payment_intent_status = models.CharField(max_length=50, blank=True)
+    # details taken from charge object
+    charge_id = models.CharField(max_length=250, blank=True)
+    charge_status = models.CharField(max_length=50, blank=True)
+    #details taken from payment_intent.created event
+    currency = models.CharField(max_length=3, blank=True)
+    amount = models.IntegerField(null=True, validators=[MinValueValidator(15)])
+    live_mode = models.BooleanField(null=True)
+    payments = TopUpDateManager()
+    objects = models.Manager()
 
+    def __str__(self, *args, **kwargs):
+        return str(self.pk)
+
+#     def amount_full_units(self):
+#         if self.amount:
+#             return self.amount / 100

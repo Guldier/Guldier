@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from .models import Price, TopUp
+from .models import TopUp
 
-
-admin.site.register(Price)
 admin.site.register(TopUp)

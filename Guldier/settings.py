@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+from urllib.parse import urljoin
 
+import environ
 from pathlib import Path
 import os
 import json
@@ -29,12 +31,15 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.17.128', '127.0.0.1', 'localhost']
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / '.env')
+# in .env ALLOWED_HOSTS=...,...,...etc.
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Application definition
 
 INSTALLED_APPS = [
-    'payments',
+    'payments.apps.PaymentsConfig',
     'shop.apps.ShopConfig',
     'users.apps.UsersConfig',
     'crispy_forms',
@@ -131,6 +136,7 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+LOGIN_URL = os.path.join('login')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -143,3 +149,4 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
 STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
+
