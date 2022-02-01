@@ -181,8 +181,8 @@ def increase_balance(event_body, topup):
 class PaymentHistoryView(View):
     def get(self, request):
         user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
-        for payment in user_payments:
-            payment.amount = payment.amount / 100
+        # for payment in user_payments:
+        #     payment.amount = payment.amount / 100
         paginator = Paginator(user_payments, 10)
 
         page_number = request.GET.get('page')
