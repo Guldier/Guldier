@@ -40,7 +40,10 @@ def create_list():
 
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
-        money += (orders.composition.dish.price + orders.composition.addon.price) * orders.quantity
+        if orders.composition.dish.dish_type == 'special' and orders.composition.dish.price == 20:
+            money += ((orders.composition.dish.price - 2) + orders.composition.addon.price) * orders.quantity
+        else:
+            money += ((orders.composition.dish.price - 1) + orders.composition.addon.price) * orders.quantity
 
     message += f'\nŁącznie do zapłaty: {money}zł\n'
     message += '\nPozdrawiamy\nLinetech'
@@ -49,7 +52,7 @@ def create_list():
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['damian.jadacki@linetech.pl','biuro@hotel-trzykorony.pl','bartosz.wrobel@linetech.pl','lukasz.magda@linetech.pl'],
+        ['biuro@hotel-trzykorony.pl','damian.jadacki@linetech.pl','bartosz.wrobel@linetech.pl','lukasz.magda@linetech.pl'],
         fail_silently=False,
     )
 

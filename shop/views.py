@@ -20,7 +20,7 @@ from users.models import (
 
 
 startTime = time(3,00)
-endTime = time(9,00)
+endTime = time(10,00)
 
 def check_time():
     now = datetime.now()
@@ -112,7 +112,7 @@ def home (request):
         context.update({'money': money})
     except:
         pass    
-    #messages.success(request,'Dziś lista zamyka się o godzinie 11:30')
+    #messages.success(request,'Merry Christmas. We will be back on Monday')
     #messages.success(request,'Niedziela: Rosół z makaronem - Schab z grilla z pieczarkami, ziemniaki, kalafior z bułeczką tartą')
     return render(request, 'shop/home.html',context)
 
