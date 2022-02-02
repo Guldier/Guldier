@@ -9,6 +9,8 @@ from crispy_forms.bootstrap import InlineRadios
 class TopUpForm(forms.Form):
 
     PAYMENTS_VALUE = [
+        ('15', 15),
+        ('25', 25),
         ('50', 50),
         ('100', 100),
         ('200', 200),

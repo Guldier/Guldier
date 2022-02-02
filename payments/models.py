@@ -35,4 +35,4 @@ class TopUp(models.Model):
     @property
     def amount_full_units(self):
         if self.amount:
-            return self.amount / 100
+            return f'{self.amount / 100:.2f}'
