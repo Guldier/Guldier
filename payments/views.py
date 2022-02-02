@@ -1,23 +1,24 @@
+import stripe
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-
-from payments import forms as pay_forms
-from payments import models as pay_models
-from payments import schemas as pay_schemas
-from urllib.parse import urljoin
+from django.views.generic import FormView, TemplateView
 from users.models import Profile
-from payments.models import TopUp
-import stripe
+
+from .forms import TopUpForm
+from .models import TopUp
+from .schemas import (LineItems, LineItemsSchema, Metadata, MetadataSchema,
+                      PaymentIntentData, PaymentIntentDataSchema, PriceData,
+                      ProductData)
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -25,11 +26,10 @@ endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
 class ProductLandingPageView(LoginRequiredMixin, View):
-
     related_field = 'redirect_to'
 
     def get(self, request, *args, **kwargs):
-        form = pay_forms.TopUpForm()
+        form = TopUpForm()
         context = {
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
             'form': form,
@@ -37,39 +37,27 @@ class ProductLandingPageView(LoginRequiredMixin, View):
         return render(request, template_name='top_up.html', context=context)
 
 
-class CreateCheckoutSessionView(View):
+class CreateCheckoutSessionView(FormView):
 
-    def post(self, request, *args, **kwargs):
-        # get the amount that customer wants to top up his account with
-        form = pay_forms.TopUpForm(request.POST)
-        if form.is_valid():
-            topup_value = form.cleaned_data['top_up_amount']
-        else:
-            return redirect('payments:top_up')
-        # assign all values needed to open a checkout session with Stripe
-        # get success and cancel url
-        schema = 'http://'
-        host = request.META['HTTP_HOST']
-        hostname = host.split(':')[0]
-        port = host.split(':')[1]
-        success_url = urljoin(schema + hostname + ':' + port, '/payments/success')
-        cancel_url = urljoin(schema + hostname + ':' + port, '/payments/cancel')
-        # get line items json
+    form_class = TopUpForm
+
+    def form_valid(self, form):
+        topup_value = form.cleaned_data['amount']
+        success_url = self.request.build_absolute_uri(reverse('payments:success'))
+        cancel_url = self.request.build_absolute_uri(reverse('payments:cancel'))
         intent_value = int(topup_value) * 100
-        quantity = 1
-        name = 'Top up'
-        currency = 'pln'
-        product_data = pay_schemas.ProductData(name=name)
-        price_data = pay_schemas.PriceData(currency=currency, unit_amount=intent_value, product_data=product_data)
-        line_items = pay_schemas.LineItems(price_data=price_data, quantity=quantity)
-        line_items_json = pay_schemas.LineItemsSchema().dump(line_items)
+        topup_data = settings.TOPUP_DATA
+        product_data = ProductData(name=topup_data['name'])
+        price_data = PriceData(currency=topup_data['currency'], unit_amount=intent_value, product_data=product_data)
+        line_items = LineItems(price_data=price_data, quantity=topup_data['quantity'])
+        line_items_json = LineItemsSchema().dump(line_items)
         # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
-        user = request.user
-        topup_pk = pay_models.TopUp.payments.create(user=user).pk
-        metadata = pay_schemas.Metadata(topup_pk=topup_pk)
-        metadata_json = pay_schemas.MetadataSchema().dump(metadata)
-        payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
-        payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
+        user = self.request.user
+        topup_pk = TopUp.payments.create(user=user).pk
+        metadata = Metadata(topup_pk=topup_pk)
+        metadata_json = MetadataSchema().dump(metadata)
+        payment_intent_data = PaymentIntentData(metadata=metadata)
+        payment_intent_data_json = PaymentIntentDataSchema().dump(payment_intent_data)
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
             line_items=[
@@ -81,8 +69,11 @@ class CreateCheckoutSessionView(View):
             success_url=success_url,
             cancel_url=cancel_url,
         )
-        # redirect to Stripe's checkout session 
-        return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})
+        # redirect to Stripe's checkout session
+        return redirect(checkout_session.url, code=303)
+
+    def form_invalid(self, form):
+        return redirect('payments:top_up')
 
 
 class SuccessView(TemplateView):
@@ -112,33 +103,36 @@ class WebhookView(View):
             # Invalid signature
             return HttpResponse(status=400)
 
-        #get payload and type of object that came in the event
+        # get payload and type of object that came in the event
         event_body, object_type = get_event_payload_and_type(event)
-        #only checkout_session, payment_intent and charge objects come back with metadata
+        # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body.metadata, 'topup_pk', None):
-            topup = get_transaction_record(event_body) # find transaction's record in database
-            save_id_and_status(event_body, topup, object_type) # save event's id and status
+            topup = get_transaction_record(event_body)  # find transaction's record in database
+            save_id_and_status(event_body, topup, object_type)  # save event's id and status
             if event.type == 'payment_intent.created':
-                save_amount_data(event_body, topup) 
-                is_live_mode(event_body, topup) # flags if test or live
+                save_amount_data(event_body, topup)
+                is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
-                increase_balance(event_body, topup) # add funds to user's account
+                increase_balance(event_body, topup)  # add funds to user's account
             topup.save()
         return HttpResponse(status=200)
+
 
 def get_event_payload_and_type(event):
     event_body = event.data.object
     object_type = event_body.object
     return event_body, object_type
 
+
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
     try:
-        topup = pay_models.TopUp.payments.get(pk=topup_pk)
+        topup = TopUp.payments.get(pk=topup_pk)
         return topup
-    except pay_models.TopUp.DoesNotExist:
-        print('record with this pk does not exist') #TODO handle error
+    except TopUp.DoesNotExist:
+        print('record with this pk does not exist')  # TODO handle error
         return None
+
 
 def save_id_and_status(event_body, topup, object_type):
     if object_type == 'checkout.session':
@@ -152,18 +146,22 @@ def save_id_and_status(event_body, topup, object_type):
         topup.charge_id = event_body.id
     return topup
 
+
 def save_email(event_body, topup):
     topup.customer_email = event_body.email
     return topup
+
 
 def save_amount_data(event_body, topup):
     topup.amount = event_body.amount
     topup.currency = event_body.currency
     return topup
 
+
 def is_live_mode(event_body, topup):
     topup.live_mode = event_body.livemode
     return topup
+
 
 def increase_balance(event_body, topup):
     amount_received = int(event_body.amount / 100)
@@ -180,7 +178,8 @@ def increase_balance(event_body, topup):
 @method_decorator(login_required, name='dispatch')
 class PaymentHistoryView(View):
     def get(self, request):
-        user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by('-date_created')
+        user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by(
+            '-date_created')
         for payment in user_payments:
             payment.amount = payment.amount / 100
         paginator = Paginator(user_payments, 10)

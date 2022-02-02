@@ -1,7 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from users.models import Profile
+from django.db import models
 
 
 class TopUpDateManager(models.Manager):
@@ -31,7 +30,3 @@ class TopUp(models.Model):
 
     def __str__(self, *args, **kwargs):
         return str(self.pk)
-
-#     def amount_full_units(self):
-#         if self.amount:
-#             return self.amount / 100
