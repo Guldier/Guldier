@@ -1,7 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -170,7 +168,7 @@ def increase_balance(event_body, topup):
     user = topup.user
     try:
         profile = Profile.objects.get(user=user)
-    except ObjectDoesNotExist:
+    except Profile.DoesNotExist:
         return render(request, template_name='payment_failure.html')
 
     profile.money = F('money') + amount_received
@@ -180,9 +178,10 @@ def increase_balance(event_body, topup):
 class PaymentHistoryView(LoginRequiredMixin, ListView):
     login_url = '/login/'
     template_name = 'payment-history.html'
-    model = TopUp.objects.all()
+    model = TopUp
     paginate_by = 10
+    ordering = '-date_created'
 
     def get_queryset(self):
         user = self.request.user
-        return self.model.filter(user=user).exclude(payment_intent_status='').order_by('-date_created')
+        return super().get_queryset().filter(user=user).exclude(payment_intent_status='')
