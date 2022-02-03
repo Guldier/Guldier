@@ -2,6 +2,8 @@ import csv
 
 from django.contrib import admin
 from django.http import HttpResponse
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 from .models import TopUp
 
@@ -18,9 +20,11 @@ def export_to_csv(modeladmin, request, queryset):
     return response
 export_to_csv.short_description = "Download selected as .csv"
 
+def invoice(obj):
+    return mark_safe('<a href="{}">PDF</a>'.format(reverse('payments:invoice_pdf', args=[obj.id])))
 
 class TopUpAdmin(admin.ModelAdmin):
-    list_display = ['id', 'date_created', 'date_updated', 'user', 'amount', 'payment_intent_status', 'currency', 'live_mode']
+    list_display = ['id', invoice, 'date_created', 'date_updated', 'user', 'amount', 'payment_intent_status', 'currency', 'live_mode']
     list_filter = ['id', 'date_created', 'date_updated', 'user', 'amount', 'payment_intent_status', 'currency', 'live_mode']
     actions = [export_to_csv]
 

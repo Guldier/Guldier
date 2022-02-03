@@ -2,7 +2,8 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, Q
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.template.loader import render_to_string
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView
@@ -15,6 +16,7 @@ from urllib.parse import urljoin
 from users.models import Profile
 from payments.models import TopUp
 import stripe
+import weasyprint
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -185,3 +187,12 @@ class PaymentHistoryView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         return super().get_queryset().filter(user=user).exclude(payment_intent_status='')
+
+
+def create_invoice(request, topup_pk):
+    topup = get_object_or_404(TopUp, pk=topup_pk)
+    html = render_to_string('payments/invoice_pdf.html', {'topup': topup})
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="invoice_{}.pdf"'.format(topup.pk)
+    weasyprint.HTML(string=html).write_pdf(response)
+    return response
