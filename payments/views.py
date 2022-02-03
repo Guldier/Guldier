@@ -1,5 +1,7 @@
+from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import EmailMessage
 from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -8,6 +10,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView
 from django.utils.decorators import method_decorator
+from io import BytesIO
 
 from payments import forms as pay_forms
 from payments import models as pay_models
@@ -21,6 +24,8 @@ import weasyprint
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+mail_sender = settings.DEFAULT_FROM_EMAIL
 
 
 class ProductLandingPageView(LoginRequiredMixin, View):
@@ -123,6 +128,7 @@ class WebhookView(View):
                 is_live_mode(event_body, topup) # flags if test or live
             elif event.type == 'payment_intent.succeeded':
                 increase_balance(event_body, topup) # add funds to user's account
+                send_email_with_invoice(topup) # send invoice to currently logged user's (! )e-mail
             topup.save()
         return HttpResponse(status=200)
 
@@ -176,6 +182,33 @@ def increase_balance(event_body, topup):
     profile.money = F('money') + amount_received
     profile.save()
 
+def write_invoice_to_pdf(topup, target):
+    html = render_to_string('payments/invoice_pdf.html', {'topup': topup})
+    weasyprint.HTML(string=html).write_pdf(target)
+    return target
+
+def send_email_with_invoice(topup):
+    subject = f'Guldier - invoice no. {topup.pk}'
+    message = 'Thank you for choosing our service. Attached you will find an invoice.'
+    email = EmailMessage(subject=subject, body=message, from_email=mail_sender, to=[topup.user.email])
+    out = BytesIO()
+    write_invoice_to_pdf(topup, out)
+    email.attach(filename='invoice_{}.pdf'.format(topup.pk), content=out.getvalue(), mimetype='application/pdf')
+    email.send
+
+
+class GetInvoiceView(LoginRequiredMixin, views.View):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_staff:
+            topup_pk = self.kwargs['topup_pk']
+            topup = get_object_or_404(TopUp, pk=topup_pk)
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'filename="invoice_{}.pdf"'.format(topup.pk)
+            write_invoice_to_pdf(topup, response)
+            return response
+        else:
+            return HttpResponse(status=403)
+
 
 class PaymentHistoryView(LoginRequiredMixin, ListView):
     login_url = '/login/'
@@ -187,12 +220,3 @@ class PaymentHistoryView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         return super().get_queryset().filter(user=user).exclude(payment_intent_status='')
-
-
-def create_invoice(request, topup_pk):
-    topup = get_object_or_404(TopUp, pk=topup_pk)
-    html = render_to_string('payments/invoice_pdf.html', {'topup': topup})
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="invoice_{}.pdf"'.format(topup.pk)
-    weasyprint.HTML(string=html).write_pdf(response)
-    return response
