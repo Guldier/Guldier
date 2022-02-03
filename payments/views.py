@@ -169,7 +169,7 @@ def increase_balance(event_body, topup):
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
-        return render(request, template_name='payment_failure.html')
+        return render(request, template_name='payments/payment_failure.html')
 
     profile.money = F('money') + amount_received
     profile.save()
