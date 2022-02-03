@@ -1,7 +1,6 @@
 import csv
 
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 
 from .models import TopUp
@@ -12,7 +11,7 @@ def export_to_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment;filename={}.csv'.format(opts.verbose_name)
     writer = csv.writer(response)
-    field_names = [field.name for field in opts.get_fields() if not field.many_to_many and not field.one_to_many]
+    field_names = [field.name for field in opts.get_fields()]
     writer.writerow(field_names)
     for obj in queryset:
         writer.writerow([getattr(obj, field) for field in field_names])
