@@ -67,21 +67,22 @@ class CreateCheckoutSessionView(View):
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
-        # create a coupon
-        coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=10)
+        # create a coupon if discounts are on
+        if settings.IS_DISCOUNT and intent_value >= settings.DISCOUNT_TRESHOLD:
+            coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=settings.DISCOUNT_PERCENT, amount_off=settings.DISCOUNT_AMOUNT, currency=currency)
+            discount = pay_schemas.DiscountData(id=coupon.id)
+        else:
+            discount = pay_schemas.DiscountData()
+        discount_json = pay_schemas.DiscountDataSchema().dump(discount)
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
-            line_items=[
-                line_items_json,
-            ],
+            line_items=[line_items_json,],
             metadata=metadata_json,
             mode='payment',
             payment_intent_data=payment_intent_data_json,
             success_url=success_url,
             cancel_url=cancel_url,
-            discounts=[
-                {'coupon': coupon.id,}
-            ],
+            discounts= [discount_json,],
         )
         # redirect to Stripe's checkout session 
         return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})
