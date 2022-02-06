@@ -194,7 +194,7 @@ def send_email_with_invoice(topup):
     out = BytesIO()
     write_invoice_to_pdf(topup, out)
     email.attach(filename='invoice_{}.pdf'.format(topup.pk), content=out.getvalue(), mimetype='application/pdf')
-    email.send
+    email.send()
 
 
 class GetInvoiceView(LoginRequiredMixin, views.View):
