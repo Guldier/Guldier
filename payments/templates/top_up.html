@@ -1,5 +1,14 @@
 {% extends 'shop/base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="{% static 'payments/css/form_radio.css' %}">
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'payments/scripts/topUpForm.js' %}"></script>
+{% endblock %}
 
 {% block content %}
 
