@@ -31,7 +31,7 @@ class ProductLandingPageView(LoginRequiredMixin, View):
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
             'form': form,
         }
-        return render(request, template_name='top_up.html', context=context)
+        return render(request, template_name='payments/top_up.html', context=context)
 
 
 class CreateCheckoutSessionView(View):
@@ -83,11 +83,11 @@ class CreateCheckoutSessionView(View):
 
 
 class SuccessView(TemplateView):
-    template_name = 'success.html'
+    template_name = 'payments/success.html'
 
 
 class CancelView(TemplateView):
-    template_name = 'cancel.html'
+    template_name = 'payments/cancel.html'
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -169,7 +169,7 @@ def increase_balance(event_body, topup):
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
-        return render(request, template_name='payment_failure.html')
+        return render(request, template_name='payments/payment_failure.html')
 
     profile.money = F('money') + amount_received
     profile.save()
@@ -177,7 +177,7 @@ def increase_balance(event_body, topup):
 
 class PaymentHistoryView(LoginRequiredMixin, ListView):
     login_url = '/login/'
-    template_name = 'payment-history.html'
+    template_name = 'payments/payment-history.html'
     model = TopUp
     paginate_by = 10
     ordering = '-date_created'
