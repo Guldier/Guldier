@@ -1,3 +1,5 @@
+from ast import Bytes
+from wsgiref import headers
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -193,7 +195,7 @@ def send_email_with_invoice(topup):
     email = EmailMessage(subject=subject, body=message, from_email=mail_sender, to=[topup.user.email])
     out = BytesIO()
     write_invoice_to_pdf(topup, out)
-    email.attach(filename='invoice_{}.pdf'.format(topup.pk), content=out.getvalue(), mimetype='application/pdf')
+    email.attach(filename='Guldier_invoice_{}'.format(topup.pk), content=out.getvalue(), mimetype='application/pdf')
     email.send()
 
 
@@ -202,8 +204,11 @@ class GetInvoiceView(LoginRequiredMixin, views.View):
         if request.user.is_staff:
             topup_pk = self.kwargs['topup_pk']
             topup = get_object_or_404(TopUp, pk=topup_pk)
-            response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = 'filename="invoice_{}.pdf"'.format(topup.pk)
+            invoice_name = 'Guldier_invoice_{}'.format(topup_pk)
+            response = HttpResponse(content=b'',headers={
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': 'attachment; filename={}'.format(invoice_name),
+            })
             write_invoice_to_pdf(topup, response)
             return response
         else:
