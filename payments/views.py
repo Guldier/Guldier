@@ -43,7 +43,7 @@ class ProductLandingPageView(LoginRequiredMixin, View):
         return render(request, template_name='payments/top_up.html', context=context)
 
 
-class CreateCheckoutSessionView(View):
+class CreateCheckoutSessionView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         # get the amount that customer wants to top up his account with
