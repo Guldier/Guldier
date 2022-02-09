@@ -153,3 +153,12 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
 STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
+
+COMPANY_DETAILS = {
+    'name': 'Guldier SC',
+    'street': 'Wrocławska',
+    'no': '15',
+    'town': 'Wrocław',
+    'post_code': '67-200',
+    'NIP': '123-456-32-18'
+}

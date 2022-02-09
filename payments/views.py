@@ -1,3 +1,5 @@
+import os
+
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -6,6 +8,7 @@ from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView
@@ -27,9 +30,10 @@ endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 mail_sender = settings.DEFAULT_FROM_EMAIL
 
+company_details = settings.COMPANY_DETAILS
+
 
 class ProductLandingPageView(LoginRequiredMixin, View):
-
     related_field = 'redirect_to'
 
     def get(self, request, *args, **kwargs):
@@ -117,25 +121,28 @@ class WebhookView(View):
             # Invalid signature
             return HttpResponse(status=400)
 
-        #get payload and type of object that came in the event
+        # get payload and type of object that came in the event
         event_body, object_type = get_event_payload_and_type(event)
-        #only checkout_session, payment_intent and charge objects come back with metadata
+        # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body.metadata, 'topup_pk', None):
-            topup = get_transaction_record(event_body) # find transaction's record in database
-            save_id_and_status(event_body, topup, object_type) # save event's id and status
+            topup = get_transaction_record(event_body)
+            # find transaction's record in database
+            save_id_and_status(event_body, topup, object_type)  # save event's id and status
             if event.type == 'payment_intent.created':
-                save_amount_data(event_body, topup) 
-                is_live_mode(event_body, topup) # flags if test or live
+                save_amount_data(event_body, topup)
+                is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
-                increase_balance(event_body, topup) # add funds to user's account
-                send_email_with_invoice(topup) # send invoice to currently logged user's (! )e-mail
+                increase_balance(event_body, topup)  # add funds to user's account
+                send_email_with_invoice(topup)  # send invoice to currently logged user's (! )e-mail
             topup.save()
         return HttpResponse(status=200)
+
 
 def get_event_payload_and_type(event):
     event_body = event.data.object
     object_type = event_body.object
     return event_body, object_type
+
 
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
@@ -143,8 +150,9 @@ def get_transaction_record(event_body):
         topup = pay_models.TopUp.payments.get(pk=topup_pk)
         return topup
     except pay_models.TopUp.DoesNotExist:
-        print('record with this pk does not exist') #TODO handle error
+        print('record with this pk does not exist')  # TODO handle error
         return None
+
 
 def save_id_and_status(event_body, topup, object_type):
     if object_type == 'checkout.session':
@@ -158,18 +166,22 @@ def save_id_and_status(event_body, topup, object_type):
         topup.charge_id = event_body.id
     return topup
 
+
 def save_email(event_body, topup):
     topup.customer_email = event_body.email
     return topup
+
 
 def save_amount_data(event_body, topup):
     topup.amount = event_body.amount
     topup.currency = event_body.currency
     return topup
 
+
 def is_live_mode(event_body, topup):
     topup.live_mode = event_body.livemode
     return topup
+
 
 def increase_balance(event_body, topup):
     amount_received = int(event_body.amount / 100)
@@ -182,10 +194,13 @@ def increase_balance(event_body, topup):
     profile.money = F('money') + amount_received
     profile.save()
 
+
 def write_invoice_to_pdf(topup, target):
-    html = render_to_string('payments/invoice_pdf.html', {'topup': topup})
-    weasyprint.HTML(string=html).write_pdf(target)
+    html = render_to_string('payments/invoice_pdf.html', {'topup': topup, 'company': company_details})
+    css = weasyprint.CSS(os.path.join(settings.BASE_DIR, 'payments/static/payments/styles/invoice.css'))
+    weasyprint.HTML(string=html).write_pdf(target, stylesheets=[css])
     return target
+
 
 def send_email_with_invoice(topup):
     subject = f'Guldier - invoice no. {topup.pk}'

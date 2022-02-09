@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Sonsie+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+
+body {
+    margin: -50px auto;
+    max-width: 850px;
+    /*padding: 50px 50px;*/
+    color: #555;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.8em;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'Sonsie One', cursive;
+    font-size: 4em;
+    color: #1faff1;
+}
+
+section {
+    margin-top: 20px;
+}
+
+
+.main{
+    margin-top: 30px;
+}
+
+.ds-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.section_div {
+    background-color: #dcdcdc;
+    padding: 8px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.customer {
+    padding-right: 20px
+}
+
+.signature {
+    margin-top: 100px;
+}

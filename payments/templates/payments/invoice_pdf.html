@@ -1,11 +1,70 @@
-<!DOCTYPE html>
-<html>
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{% static 'payments/styles/invoice.css' %}">
+</head>
 <body>
-    <h3>
-        Invoice
-    </h3>
-    <p>Transaction no.: {{ topup.id }}</p>
-    <p>Date: {{ topup.date_created }}</p>
-    <p>Amount: {{ topup.amount_full_units}} {{ topup.currency}}</p>
+
+<header>
+    <nav class="logo">
+        <h1>Guldier</h1>
+    </nav>
+    <nav class="invoice-details">
+        <p>Numer faktury: {{ topup.id }}</p>
+        <p>Data transakcji: {{ topup.date_created.date }}</p>
+    </nav>
+</header>
+
+<section>
+    <nav class="ds-flex">
+        <nav class="supplier">
+            <p>{{ company.name }}</p>
+            <p>ul. {{ company.street }} {{ company.no }}</p>
+            <p>{{ company.post_code }} {{ company.town }}</p>
+            <p>NIP {{ company.NIP }}</p>
+
+        </nav>
+        <nav class="customer">
+
+            <p>Leszek Grechowicz</p>
+            <p>ul. Polska 12a/19</p>
+            <p>67-800 Poznań</p>
+            <p>{{ topup.user.first_name }} {{ topup.user.last_name }}</p>
+            <p>{{ topup.user.email }}</p>
+
+        </nav>
+    </nav>
+    <div class="main">
+        <div class="section_div"><span>Rodzaj transakcji:</span></div>
+
+        <div class="ds-flex">
+            <p>Card</p>
+            <p>VISA - 4252</p>
+            {#        <p>#}
+            {#        {{ event_body.charges.data[0].payment_method_details.type }}</p>#}
+            {#        <p>{{ event_body.charges.data[0].payment_method_details.card.brand.capitalise }}#}
+            {#            - {{ event_body.charges.data[0].payment_method_details.card.last4 }}</p>#}
+        </div>
+
+        <div class="section_div"><span>Item:</span><span>Kwota:</span></div>
+        <div class="ds-flex"><p>Doładowanie konta</p>
+            <p>{{ topup.amount_full_units }} {{ topup.currency }}</p></div>
+    </div>
+    
+    <div class="signature">
+        <p>Serdecznie dziękujemy,</p>
+        <p>pozdrawiamy i życzymy smacznego !</p>
+        <p>Team - {{ company.name }}.</p>
+    </div>
+
+
+</section>
+
+
 </body>
 </html>
