@@ -21,7 +21,7 @@ def export_to_csv(modeladmin, request, queryset):
 export_to_csv.short_description = "Download selected as .csv"
 
 def invoice(obj):
-    return mark_safe('<a href="{}">PDF</a>'.format(reverse('payments:invoice_pdf', args=[obj.id])))
+    return mark_safe('<a href="{}">PDF</a>'.format(reverse('payments:invoice_pdf', args=[obj.pk])))
 
 class TopUpAdmin(admin.ModelAdmin):
     list_display = ['id', invoice, 'date_created', 'date_updated', 'user', 'amount', 'payment_intent_status', 'currency', 'live_mode']
