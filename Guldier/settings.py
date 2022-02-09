@@ -139,6 +139,9 @@ MEDIA_URL = '/media/'
 LOGIN_URL = os.path.join('login')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if DEBUG == True:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -149,4 +152,3 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
 STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
-

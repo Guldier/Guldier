@@ -20,8 +20,9 @@ class LineItems:
 
 
 class Metadata:
-    def __init__(self, topup_pk):
+    def __init__(self, topup_pk, address_pk):
         self.topup_pk =  topup_pk
+        self.address_pk =  address_pk
         
 
 class PaymentIntentData:
@@ -46,6 +47,7 @@ class LineItemsSchema(Schema):
 
 class MetadataSchema(Schema):
     topup_pk = fields.Int()
+    address_pk = fields.Int()
 
 
 class PaymentIntentDataSchema(Schema):
