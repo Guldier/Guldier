@@ -1,15 +1,16 @@
-from ast import Bytes
-from wsgiref import headers
+
+import stripe
+
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, ListView, FormView
-from django.urls import reverse
+from django.views.generic import TemplateView, ListView
 from django.utils.decorators import method_decorator
 
 from payments import forms as pay_forms
@@ -18,15 +19,12 @@ from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
 from payments.models import Address, TopUp, Invoice
-import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
-
 class ProductLandingPageView(LoginRequiredMixin, View):
-
     related_field = 'redirect_to'
 
     def get(self, request, *args, **kwargs):
@@ -126,28 +124,32 @@ class WebhookView(View):
             # Invalid signature
             return HttpResponse(status=400)
 
-        #get payload and type of object that came in the event
+        # get payload and type of object that came in the event
         event_body, object_type = get_event_payload_and_type(event)
-        #only checkout_session, payment_intent and charge objects come back with metadata
+        # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body.metadata, 'topup_pk', None):
-            topup = get_transaction_record(event_body) # find transaction's record in database
-            save_id_and_status(event_body, topup, object_type) # save event's id and status
+            topup = get_transaction_record(event_body)
+            # find transaction's record in database
+            save_id_and_status(event_body, topup, object_type)  # save event's id and status
             if event.type == 'payment_intent.created':
-                save_amount_data(event_body, topup) 
-                is_live_mode(event_body, topup) # flags if test or live
+                save_amount_data(event_body, topup)
+                is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
                 increase_balance(request, event_body, topup) # add funds to user's account
                 topup.save()
-                invoice = create_invoice(event_body)
+                invoice = topup.create_invoice(event_body)
                 if invoice:
-                    invoice.send_email_with_invoice() # send invoice to currently logged user's (! )e-mail
+                    invoice.send_email_with_invoice(request) # send invoice to currently logged user's (! )e-mail
+
             topup.save()
         return HttpResponse(status=200)
+
 
 def get_event_payload_and_type(event):
     event_body = event.data.object
     object_type = event_body.object
     return event_body, object_type
+
 
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
@@ -156,6 +158,7 @@ def get_transaction_record(event_body):
         return topup
     except pay_models.TopUp.DoesNotExist:
         return HttpResponse(status=404)
+
 
 def save_id_and_status(event_body, topup, object_type):
     if object_type == 'checkout.session':
@@ -169,14 +172,17 @@ def save_id_and_status(event_body, topup, object_type):
         topup.charge_id = event_body.id
     return topup
 
+
 def save_email(event_body, topup):
     topup.customer_email = event_body.email
     return topup
+
 
 def save_amount_data(event_body, topup):
     topup.amount = event_body.amount
     topup.currency = event_body.currency
     return topup
+
 
 def is_live_mode(event_body, topup):
     topup.live_mode = event_body.livemode
@@ -193,16 +199,6 @@ def increase_balance(request, event_body, topup):
     profile.money = F('money') + amount_received
     profile.save()
 
-def create_invoice(event_body, topup):
-    address_pk = event_body.metadata.address_pk
-    try:
-        address = pay_models.Address.objects.get(pk=address_pk)
-    except pay_models.Address.DoesNotExist:
-        return HttpResponse(status=404)
-    invoice = pay_models.Invoice.objects.create(user=topup.user, address=address, topup=topup)
-    invoice.save_name()
-    return invoice
-
 
 class GetInvoiceView(LoginRequiredMixin, views.View):
     def get(self, request, *args, **kwargs):
@@ -213,7 +209,7 @@ class GetInvoiceView(LoginRequiredMixin, views.View):
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': 'attachment; filename={}'.format(invoice.name),
             })
-            invoice.write_invoice_to_pdf(response)
+            invoice.write_invoice_to_pdf(request, response)
             return response
         else:
             return HttpResponse(status=403, content="Sorry, you're not authorised to see this content.")

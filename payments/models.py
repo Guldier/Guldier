@@ -1,6 +1,9 @@
+import os
+import datetime
 import weasyprint
 from io import BytesIO
 
+from django.conf import settings
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -10,9 +13,9 @@ from django.core.validators import MinValueValidator
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 
-from users.models import Profile
-
 mail_sender = settings.DEFAULT_FROM_EMAIL
+
+company_details = settings.COMPANY_DETAILS
 
 class TopUpDateManager(models.Manager):
     def get_queryset(self):
@@ -103,17 +106,26 @@ class Invoice(models.Model):
             )
         super().save(*args, **kwargs)
 
-    def write_invoice_to_pdf(self, target):
-        html = render_to_string('payments/invoice_pdf.html', {'invoice': self})
-        weasyprint.HTML(string=html).write_pdf(target)
+    def write_invoice_to_pdf(self, request, target):
+        date_format = '%d-%m-%Y'
+        self.date_created = self.date_created.strftime(date_format)
+        product_data = {
+            'product_vat': settings.COMPANY_VAT_RATE,
+            'product_name': settings.PRODUCT_NAME,
+            'vat': True,
+            'release_date': datetime.datetime.now().strftime(date_format)
+        }
+        html = render_to_string('payments/invoice_pdf.html', {'invoice': self, 'company': company_details, 'product_data': product_data})
+        css = weasyprint.CSS(os.path.join(settings.BASE_DIR, 'payments/static/payments/styles/invoice.css'))
+        weasyprint.HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(target, stylesheets=[css])
         return target
 
-    def send_email_with_invoice(self):
+    def send_email_with_invoice(self, request):
         subject = f'Guldier - invoice {self.name}'
         message = 'Thank you for choosing our service. Attached you will find an invoice.'
         email = EmailMessage(subject=subject, body=message, from_email=mail_sender, to=[self.user.email])
         out = BytesIO()
-        self.write_invoice_to_pdf(out)
+        self.write_invoice_to_pdf(request, out)
         email.attach(filename=self.name, content=out.getvalue(), mimetype='application/pdf')
         email.send()
         return True

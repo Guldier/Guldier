@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Sonsie+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+
+body {
+    margin: 0 auto;
+    max-width: 850px;
+    /*padding: 50px 50px;*/
+    color: #555;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.8em;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 70px;
+}
+
+section {
+    margin-top: 20px;
+}
+
+.logo img {
+    width: 225px;
+}
+
+.main {
+    margin-top: 30px;
+}
+
+.ds-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.section_div {
+    background-color: #dcdcdc;
+    padding: 8px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.customer {
+    padding-right: 30px
+}
+
+.signature {
+    margin-top: 100px;
+}
+
+.p-bold {
+    font-weight: bold;
+}
+
+.vat_table {
+    /*border: 1px solid #C0C0C0;*/
+    border-collapse: collapse;
+    padding: 5px;
+}
+
+.vat_table th {
+    border: 1px solid #C0C0C0;
+    padding: 5px 5px;
+    background: #F0F0F0;
+    text-align: center;
+}
+
+.vat_table td {
+    /*border: 1px solid #C0C0C0;*/
+    text-align: center;
+    padding: 5px;
+}
+
+.th_long {
+    min-width: 250px;
+}
+
+.border-on {
+    border: 1px solid #C0C0C0;
+
+}
