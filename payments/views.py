@@ -3,7 +3,7 @@ from wsgiref import headers
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, Q
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import View
@@ -17,7 +17,7 @@ from payments import models as pay_models
 from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
-from payments.models import Address, TopUp
+from payments.models import Address, TopUp, Invoice
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -51,22 +51,15 @@ class CreateCheckoutSessionView(View):
         # get the amount that customer wants to top up his account with
             topup_value = form.cleaned_data['top_up_amount']
         # get the address for invoice
-            try:
-                last_address = Address.objects.all().filter(user=user).latest('date_created')
-            except Address.DoesNotExist:
-                last_address = None
-            if last_address and form == last_address:
-                address = last_address
-            else:
-                address = Address.objects.create(
-                    user=user, 
-                    name = form.cleaned_data['name'],
-                    surname = form.cleaned_data['surname'],
-                    street_and_number = form.cleaned_data['street_and_number'],
-                    city = form.cleaned_data['city'],
-                    country = form.cleaned_data['country'],
-                    postal_code = form.cleaned_data['postal_code'],
-                )
+            address = Address.objects.create(
+                user=user, 
+                name = form.cleaned_data['name'],
+                surname = form.cleaned_data['surname'],
+                street_and_number = form.cleaned_data['street_and_number'],
+                city = form.cleaned_data['city'],
+                country = form.cleaned_data['country'],
+                postal_code = form.cleaned_data['postal_code'],
+            )
         else:
             return redirect('payments:top_up')
         # assign all values needed to open a checkout session with Stripe
@@ -145,9 +138,9 @@ class WebhookView(View):
             elif event.type == 'payment_intent.succeeded':
                 increase_balance(request, event_body, topup) # add funds to user's account
                 topup.save()
-                invoice = create_invoice(event_body, topup)
+                invoice = create_invoice(event_body)
                 if invoice:
-                    topup.send_email_with_invoice() # send invoice to currently logged user's (! )e-mail
+                    invoice.send_email_with_invoice() # send invoice to currently logged user's (! )e-mail
             topup.save()
         return HttpResponse(status=200)
 
@@ -214,17 +207,16 @@ def create_invoice(event_body, topup):
 class GetInvoiceView(LoginRequiredMixin, views.View):
     def get(self, request, *args, **kwargs):
         if request.user.is_staff:
-            topup_pk = self.kwargs['topup_pk']
-            topup = get_object_or_404(TopUp, pk=topup_pk)
-            invoice_name = 'Guldier_invoice_{}'.format(topup_pk)
+            invoice_pk = self.kwargs['invoice_pk']
+            invoice = get_object_or_404(Invoice, pk=invoice_pk)
             response = HttpResponse(content=b'',headers={
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename={}'.format(invoice_name),
+                'Content-Disposition': 'attachment; filename={}'.format(invoice.name),
             })
-            topup.write_invoice_to_pdf(response)
+            invoice.write_invoice_to_pdf(response)
             return response
         else:
-            return HttpResponse(status=403)
+            return HttpResponse(status=403, content="Sorry, you're not authorised to see this content.")
 
 
 class PaymentHistoryView(LoginRequiredMixin, ListView):
