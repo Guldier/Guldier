@@ -1,4 +1,5 @@
 {% load static %}
+{% load calculate_vat %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -12,26 +13,28 @@
 
 <header>
     <nav class="logo">
-        <h1>Guldier</h1>
+        <img src="{% static 'payments/images/logo.png' %}" alt="company logo">
     </nav>
     <nav class="invoice-details">
         <p>Numer faktury: {{ topup.id }}</p>
-        <p>Data transakcji: {{ topup.date_created.date }}</p>
+        <p>Data wystawienia: {{ product_data.release_date }}</p>
+        <p>Data transakcji: {{ topup.date_created }}</p>
     </nav>
 </header>
 
 <section>
     <nav class="ds-flex">
         <nav class="supplier">
-            <p>{{ company.name }}</p>
+            <p>Sprzedawca:</p>
+            <p class="p-bold">{{ company.name }}</p>
             <p>ul. {{ company.street }} {{ company.no }}</p>
             <p>{{ company.post_code }} {{ company.town }}</p>
             <p>NIP {{ company.NIP }}</p>
 
         </nav>
         <nav class="customer">
-
-            <p>Leszek Grechowicz</p>
+            <p>Nabywca:</p>
+            <p class="p-bold">Leszek Grechowicz</p>
             <p>ul. Polska 12a/19</p>
             <p>67-800 Poznań</p>
             <p>{{ topup.user.first_name }} {{ topup.user.last_name }}</p>
@@ -40,22 +43,95 @@
         </nav>
     </nav>
     <div class="main">
+        {% if product_data.vat %}
+            <h2></h2>
+
+            <table class="vat_table">
+                <caption>Faktura VAT</caption>
+                <thead>
+                <tr>
+                    <th>L.p.</th>
+
+                    <th class="th_long">Nazwa towaru lub usługi</th>
+                    <th>Jm.</th>
+                    <th>Ilość</th>
+                    <th>Cena netto</th>
+                    <th>Wartość netto</th>
+                    <th>Stawka VAT</th>
+                    <th>Kwota VAT</th>
+                    <th>Wartość brutto</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="border-on">1</td>
+                    <td class="border-on">{{ product_data.product_name }}</td>
+                    <td class="border-on">1</td>
+                    <td class="border-on">1</td>
+                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %}</td>
+                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %}</td>
+                    <td class="border-on">{{ product_data.product_vat}}%</td>
+                    <td class="border-on">{% return_vat_amount topup.amount_full_units product_data.product_vat %}</td>
+                    <td class="border-on">{{ topup.amount_full_units  }}</td>
+
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="border-on">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="border-on">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+
+
+                <tbody>
+            </table>
+
+        {% endif %}
         <div class="section_div"><span>Rodzaj transakcji:</span></div>
 
         <div class="ds-flex">
             <p>Card</p>
             <p>VISA - 4252</p>
-            {#        <p>#}
-            {#        {{ event_body.charges.data[0].payment_method_details.type }}</p>#}
-            {#        <p>{{ event_body.charges.data[0].payment_method_details.card.brand.capitalise }}#}
-            {#            - {{ event_body.charges.data[0].payment_method_details.card.last4 }}</p>#}
+            {#            <p>#}
+            {#                {{ event_body.charges.data[0].payment_method_details.type }}</p>#}
+            {#            <p>{{ event_body.charges.data[0].payment_method_details.card.brand.capitalise }}#}
+            {#                - {{ event_body.charges.data[0].payment_method_details.card.last4 }}</p>#}
         </div>
 
-        <div class="section_div"><span>Item:</span><span>Kwota:</span></div>
-        <div class="ds-flex"><p>Doładowanie konta</p>
+        <div class="section_div"><span>Produkt:</span><span>Kwota:</span></div>
+        <div class="ds-flex"><p>{{ product_data.product_name }}</p>
             <p>{{ topup.amount_full_units }} {{ topup.currency }}</p></div>
     </div>
-    
+
     <div class="signature">
         <p>Serdecznie dziękujemy,</p>
         <p>pozdrawiamy i życzymy smacznego !</p>

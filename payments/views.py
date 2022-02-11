@@ -1,5 +1,6 @@
 import os
 
+
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -21,9 +22,10 @@ from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
 from payments.models import TopUp
+
 import stripe
 import weasyprint
-
+import datetime
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
@@ -133,7 +135,7 @@ class WebhookView(View):
                 is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
                 increase_balance(event_body, topup)  # add funds to user's account
-                send_email_with_invoice(topup)  # send invoice to currently logged user's (! )e-mail
+                send_email_with_invoice(request, topup)  # send invoice to currently logged user's (! )e-mail
             topup.save()
         return HttpResponse(status=200)
 
@@ -195,19 +197,35 @@ def increase_balance(event_body, topup):
     profile.save()
 
 
-def write_invoice_to_pdf(topup, target):
-    html = render_to_string('payments/invoice_pdf.html', {'topup': topup, 'company': company_details})
+def write_invoice_to_pdf(request, topup, target):
+
+    date_format = '%d-%m-%Y'
+
+    topup.date_created = topup.date_created.strftime(date_format)
+
+
+    product_data = {
+        'product_vat': settings.COMPANY_VAT_RATE,
+        'product_name': settings.PRODUCT_NAME,
+        'vat': True,
+        'release_date': datetime.datetime.now().strftime(date_format)
+    }
+
+    html = render_to_string('payments/invoice_pdf.html', {'topup': topup,
+                                                          'company': company_details,
+                                                          'product_data': product_data})
+
     css = weasyprint.CSS(os.path.join(settings.BASE_DIR, 'payments/static/payments/styles/invoice.css'))
-    weasyprint.HTML(string=html).write_pdf(target, stylesheets=[css])
+    weasyprint.HTML(string=html, base_url=request.build_absolute_uri()).write_pdf(target, stylesheets=[css])
     return target
 
 
-def send_email_with_invoice(topup):
+def send_email_with_invoice(request, topup):
     subject = f'Guldier - invoice no. {topup.pk}'
     message = 'Thank you for choosing our service. Attached you will find an invoice.'
     email = EmailMessage(subject=subject, body=message, from_email=mail_sender, to=[topup.user.email])
     out = BytesIO()
-    write_invoice_to_pdf(topup, out)
+    write_invoice_to_pdf(request, topup, out)
     email.attach(filename='invoice_{}.pdf'.format(topup.pk), content=out.getvalue(), mimetype='application/pdf')
     email.send()
 
@@ -219,7 +237,7 @@ class GetInvoiceView(LoginRequiredMixin, views.View):
             topup = get_object_or_404(TopUp, pk=topup_pk)
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = 'filename="invoice_{}.pdf"'.format(topup.pk)
-            write_invoice_to_pdf(topup, response)
+            write_invoice_to_pdf(request, topup, response)
             return response
         else:
             return HttpResponse(status=403)

@@ -3,7 +3,7 @@
 
 
 body {
-    margin: -50px auto;
+    margin: 0 auto;
     max-width: 850px;
     /*padding: 50px 50px;*/
     color: #555;
@@ -15,20 +15,18 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-h1 {
-    font-family: 'Sonsie One', cursive;
-    font-size: 4em;
-    color: #1faff1;
+    margin-bottom: 70px;
 }
 
 section {
     margin-top: 20px;
 }
 
+.logo img {
+    width: 225px;
+}
 
-.main{
+.main {
     margin-top: 30px;
 }
 
@@ -46,9 +44,41 @@ section {
 }
 
 .customer {
-    padding-right: 20px
+    padding-right: 30px
 }
 
 .signature {
     margin-top: 100px;
+}
+
+.p-bold {
+    font-weight: bold;
+}
+
+.vat_table {
+    /*border: 1px solid #C0C0C0;*/
+    border-collapse: collapse;
+    padding: 5px;
+}
+
+.vat_table th {
+    border: 1px solid #C0C0C0;
+    padding: 5px 5px;
+    background: #F0F0F0;
+    text-align: center;
+}
+
+.vat_table td {
+    /*border: 1px solid #C0C0C0;*/
+    text-align: center;
+    padding: 5px;
+}
+
+.th_long {
+    min-width: 250px;
+}
+
+.border-on {
+    border: 1px solid #C0C0C0;
+
 }
