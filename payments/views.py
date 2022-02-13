@@ -1,6 +1,5 @@
 import os
 
-
 from django import views
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -26,6 +25,7 @@ from payments.models import TopUp
 import stripe
 import weasyprint
 import datetime
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
@@ -135,6 +135,7 @@ class WebhookView(View):
                 is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
                 increase_balance(event_body, topup)  # add funds to user's account
+                save_payment_details(event_body, topup)
                 send_email_with_invoice(request, topup)  # send invoice to currently logged user's (! )e-mail
             topup.save()
         return HttpResponse(status=200)
@@ -169,6 +170,15 @@ def save_id_and_status(event_body, topup, object_type):
     return topup
 
 
+def save_payment_details(event_body, topup):
+    """Saving payment details - type of transaction, card brand and last 4 digits"""
+    topup.payment_method = event_body.charges.data[0].payment_method_details.type
+    if topup.payment_method == 'card':
+        topup.card_last_four_digits = event_body.charges.data[0].payment_method_details.card.last4
+        topup.card_brand = event_body.charges.data[0].payment_method_details.card.brand
+    return topup
+
+
 def save_email(event_body, topup):
     topup.customer_email = event_body.email
     return topup
@@ -198,17 +208,14 @@ def increase_balance(event_body, topup):
 
 
 def write_invoice_to_pdf(request, topup, target):
-
-    date_format = '%d-%m-%Y'
-
-    topup.date_created = topup.date_created.strftime(date_format)
-
+    date_format = '%d/%m/%Y'
 
     product_data = {
         'product_vat': settings.COMPANY_VAT_RATE,
         'product_name': settings.PRODUCT_NAME,
-        'vat': True,
-        'release_date': datetime.datetime.now().strftime(date_format)
+        'type_vat': True,
+        'release_date': datetime.datetime.now().strftime(date_format),
+
     }
 
     html = render_to_string('payments/invoice_pdf.html', {'topup': topup,

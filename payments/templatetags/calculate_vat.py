@@ -9,7 +9,7 @@ def return_nett(amount, vat):
     [amount]: gross amount
     [vat]: VAT rate"""
 
-    return int(float(amount)) - (int(float(amount)) * (vat / 100))
+    return f'{int(float(amount)) - (int(float(amount)) * (vat / 100)):.2f}'
 
 
 @register.simple_tag()
@@ -17,4 +17,4 @@ def return_vat_amount(amount, vat):
     """Returns vat amount
         [amount]: gross amount
         [vat]: VAT rate"""
-    return int(float(amount)) * (vat / 100)
+    return f'{int(float(amount)) * (vat / 100):.2f}'

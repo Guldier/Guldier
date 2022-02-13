@@ -18,32 +18,36 @@
     <nav class="invoice-details">
         <p>Numer faktury: {{ topup.id }}</p>
         <p>Data wystawienia: {{ product_data.release_date }}</p>
-        <p>Data transakcji: {{ topup.date_created }}</p>
+        <p>Data transakcji: {{ topup.date_created|date:"d/m/Y" }}</p>
     </nav>
 </header>
 
 <section>
     <nav class="ds-flex">
         <nav class="supplier">
-            <p>Sprzedawca:</p>
+            <p class="p-bold">Sprzedawca:</p>
             <p class="p-bold">{{ company.name }}</p>
             <p>ul. {{ company.street }} {{ company.no }}</p>
             <p>{{ company.post_code }} {{ company.town }}</p>
-            <p>NIP {{ company.NIP }}</p>
+            <p>{{ company.email }}</p>
+            <p class="p-bold">NIP: {{ company.NIP }}</p>
 
         </nav>
         <nav class="customer">
-            <p>Nabywca:</p>
+            <p class="p-bold">Nabywca:</p>
             <p class="p-bold">Leszek Grechowicz</p>
             <p>ul. Polska 12a/19</p>
             <p>67-800 Poznań</p>
             <p>{{ topup.user.first_name }} {{ topup.user.last_name }}</p>
             <p>{{ topup.user.email }}</p>
+            {% if product_data.type_vat %}
+                <p class="p-bold">NIP: customer NIP </p>
+            {% endif %}
 
         </nav>
     </nav>
     <div class="main">
-        {% if product_data.vat %}
+        {% if product_data.type_vat %}
             <h2></h2>
 
             <table class="vat_table">
@@ -64,15 +68,25 @@
                 </thead>
                 <tbody>
                 <tr>
+                    {#Invoice number#}
                     <td class="border-on">1</td>
+                    {#Product name#}
                     <td class="border-on">{{ product_data.product_name }}</td>
+                    {#Type of service#}
+                    <td class="border-on">usł.</td>
+                    {#  Number of items#}
                     <td class="border-on">1</td>
-                    <td class="border-on">1</td>
-                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %}</td>
-                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %}</td>
-                    <td class="border-on">{{ product_data.product_vat}}%</td>
-                    <td class="border-on">{% return_vat_amount topup.amount_full_units product_data.product_vat %}</td>
-                    <td class="border-on">{{ topup.amount_full_units  }}</td>
+                    {# Nett price#}
+                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %} zł</td>
+                    {# Overal nett proce#}
+                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %} zł</td>
+                    {# Product  VAT#}
+                    <td class="border-on">{{ product_data.product_vat }}%</td>
+                    {# VAT Value#}
+                    <td class="border-on">{% return_vat_amount topup.amount_full_units product_data.product_vat %} zł
+                    </td>
+                    {# Gross price#}
+                    <td class="border-on">{{ topup.amount_full_units }} zł</td>
 
                 </tr>
                 <tr>
@@ -80,56 +94,32 @@
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
+                    <td class="p-bold">&nbsp;Razem</td>
+                    <td class="border-on">{% return_nett topup.amount_full_units product_data.product_vat %} zł</td>
                     <td class="border-on">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
+                    <td class="border-on">{% return_vat_amount topup.amount_full_units product_data.product_vat %} zł
+                    </td>
+                    <td class="border-on p-bold">{{ topup.amount_full_units }} zł</td>
                 </tr>
-                <tr>
-                    <td class="border-on">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-
-
                 <tbody>
             </table>
 
+
+        {% else %}
+            <div class="section_div"><span>Produkt:</span><span>Kwota:</span></div>
+            <div class="ds-flex"><p>{{ product_data.product_name }}</p>
+                <p>{{ topup.amount_full_units }} zł</p></div>
         {% endif %}
-        <div class="section_div"><span>Rodzaj transakcji:</span></div>
+        <div class="payment-status">
+            <p class="p-bold">Sposób płatności: {{ topup.payment_method|upper }}
+                {% if topup.card_brand %}
+                    <span> {{ topup.card_brand|upper }}-{{ topup.card_last_four_digits }}</span>
+                {% endif %}
+            </p>
 
-        <div class="ds-flex">
-            <p>Card</p>
-            <p>VISA - 4252</p>
-            {#            <p>#}
-            {#                {{ event_body.charges.data[0].payment_method_details.type }}</p>#}
-            {#            <p>{{ event_body.charges.data[0].payment_method_details.card.brand.capitalise }}#}
-            {#                - {{ event_body.charges.data[0].payment_method_details.card.last4 }}</p>#}
+            <p class="p-bold">Termin płatności: {{ topup.date_created|date:"d/m/Y" }}</p>
+            <p class="p-bold">Status płatności: zapłacono</p>
         </div>
-
-        <div class="section_div"><span>Produkt:</span><span>Kwota:</span></div>
-        <div class="ds-flex"><p>{{ product_data.product_name }}</p>
-            <p>{{ topup.amount_full_units }} {{ topup.currency }}</p></div>
     </div>
 
     <div class="signature">
@@ -137,7 +127,6 @@
         <p>pozdrawiamy i życzymy smacznego !</p>
         <p>Team - {{ company.name }}.</p>
     </div>
-
 
 </section>
 

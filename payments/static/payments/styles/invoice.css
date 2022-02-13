@@ -6,7 +6,7 @@ body {
     margin: 0 auto;
     max-width: 850px;
     /*padding: 50px 50px;*/
-    color: #555;
+    color: #484747;
     font-family: 'Roboto', sans-serif;
     font-size: 0.8em;
 }
@@ -48,7 +48,7 @@ section {
 }
 
 .signature {
-    margin-top: 100px;
+    margin-top: 50px;
 }
 
 .p-bold {
@@ -80,5 +80,26 @@ section {
 
 .border-on {
     border: 1px solid #C0C0C0;
+
+}
+
+.payment-status span {
+    margin-left: 30px;
+}
+
+.payment-status {
+    margin-top: 60px;
+    position: relative;
+
+}
+
+.payment-status:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -15px;
+    width: 235px;
+    height: 2px;
+    background-color: #4f4f4f;
 
 }

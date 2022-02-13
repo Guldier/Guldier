@@ -166,7 +166,8 @@ COMPANY_DETAILS = {
     'no': '15',
     'town': 'Wrocław',
     'post_code': '67-200',
-    'NIP': '123-456-32-18'
+    'email': 'example@o3.pl',
+    'NIP': '123-456-32-18',
 }
 
 COMPANY_VAT_RATE = 23
