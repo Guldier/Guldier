@@ -1,0 +1,51 @@
+$(document).ready(function() {
+
+    //zip code formatting
+    $("#postal-code").keyup(function() {
+        zipcode = $(this).val();
+        zipcode = zipcode.replace(/-/g, '');      // remove all occurrences of '-'
+
+        if(zipcode.length >= 5 ) {
+            $(this).val(zipcode.substring(0, 2) + "-" + zipcode.substring(2, 5));
+        }
+    });
+
+    let initialAddress = $("#form-initial");
+    let oldAddress = $('#div_id_address_action');
+    let newAddress = $('#new-address');
+    let newAddressFields = $('#new-address input');
+
+    initialAddress.insertAfter('label[for=id_address_action_0');
+
+    newAddressFields.each(function() {
+        this.value = '';
+    });
+
+    let newOrOldAddress = $("input[type=radio][name=address_action]");
+
+    // newOrOldAddress.each(function() {
+    //     this.css('display', 'block'); nie dziala
+    //     this.attr('display', 'inline-block'); nie dziala
+    // }); 
+
+    if (initialAddress.length > 0) {
+        newOrOldAddress.prop('required',true);
+        newAddress.hide();
+        oldAddress.show();
+
+        newOrOldAddress.change(function() {
+            if (this.value == "new") {
+                newAddress.show();
+                // newAddress.slideDown(); nie dziala
+
+                initialAddress.hide();
+            } else if (this.value == "last") {
+                newAddress.hide();
+                initialAddress.show();
+            }
+        });
+    } else {
+        oldAddress.hide();
+        newAddress.show();
+    }
+});

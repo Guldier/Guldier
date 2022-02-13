@@ -20,23 +20,34 @@ class AmountAddressForm(forms.ModelForm):
 
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)
+    
+    ADDRESS_ACTIONS = [
+        ('last', ' Use the last used address:'),
+        ('new', ' Use a new address'),
+    ]
+
+    address_action = forms.ChoiceField(widget=forms.RadioSelect, required=False,
+                                      choices=ADDRESS_ACTIONS)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout = Layout( 
             Fieldset(
-                '1. Choose the amount (pln):'),
+                'Choose the amount (pln):'),
             InlineRadios('top_up_amount'),
             Fieldset(
-                '2. Fill in the address for your invoice:',
+                'Provide data for invoice:'),
+            InlineRadios('address_action'),
+            Fieldset(
+                '',
                 Field('name', css_class='form-control mb-2'),
                 Field('surname', css_class='form-control mb-2'),
                 Field('street_and_number', css_class='form-control mb-2'),
                 Field('city', css_class='form-control mb-2'),
                 Field('country', css_class='form-control mb-2'),
-                Field('postal_code', css_class='form-control mb-2'),
-                ),
+                Field('postal_code', css_class='form-control mb-2', id='postal-code'),
+                id='new-address'),
             ButtonHolder(
                 Submit('submit', 'Checkout', css_class='form-control mt-2'),
             ),

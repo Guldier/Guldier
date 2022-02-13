@@ -2,6 +2,7 @@ import os
 import datetime
 import weasyprint
 from io import BytesIO
+from re import match
 
 from django.conf import settings
 from django.db import models
@@ -63,9 +64,9 @@ class TopUp(models.Model):
 
 class Address(models.Model):
 
-    def only_numbers_validator(value):
-        if not value.isdigit():
-            message = '"{}" is not a valid postal code'.format(value)
+    def postal_code_validator(value):
+        if not bool(match(r'\d{2}-\d{3}', value)):
+            message = '"{}" is not a valid postal code.'.format(value)
             raise ValidationError(message=message)
 
     date_created = models.DateTimeField(auto_now_add=True)
@@ -75,7 +76,7 @@ class Address(models.Model):
     street_and_number = models.CharField(max_length=256)
     city = models.CharField(max_length=128)
     country = models.CharField(max_length=1280)
-    postal_code = models.CharField(max_length=5, validators=[only_numbers_validator])
+    postal_code = models.CharField(max_length=6, validators=[postal_code_validator])
 
     def __str__(self, *args, **kwargs):
         return '{} {}, {} {} {}, {}'.format(

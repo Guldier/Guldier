@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('street_and_number', models.CharField(max_length=256)),
                 ('city', models.CharField(max_length=128)),
                 ('country', models.CharField(max_length=1280)),
-                ('postal_code', models.CharField(max_length=5, validators=[payments.models.Address.only_numbers_validator])),
+                ('postal_code', models.CharField(max_length=5, validators=[payments.models.Address.postal_code_validator])),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
             ],
         ),

@@ -1,0 +1,15 @@
+/* error messages */
+
+.help-block, .help-inline {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+/* last address */
+
+#form-initial {
+    color: var(--blue);
+    padding-left: 1rem;
+    font-style: italic;
+}

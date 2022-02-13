@@ -45,7 +45,7 @@ class CreateCheckoutSessionView(View):
     def post(self, request, *args, **kwargs):
         user = request.user
         form = pay_forms.AmountAddressForm(request.POST)
-        if form.is_valid() and form.is_valid():
+        if form.is_valid():
         # get the amount that customer wants to top up his account with
             topup_value = form.cleaned_data['top_up_amount']
         # get the address for invoice
@@ -59,7 +59,11 @@ class CreateCheckoutSessionView(View):
                 postal_code = form.cleaned_data['postal_code'],
             )
         else:
-            return redirect('payments:top_up')
+            context = {
+                'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
+                'form': form,
+            }
+            return render(request, template_name='payments/top_up.html', context=context)
         # assign all values needed to open a checkout session with Stripe
         # get success and cancel url
         schema = 'http://'
