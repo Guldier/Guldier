@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&subset=devanagari,latin-ext');
+
+:root {
+    --main_blue: #007afd
+}
+
+.controls input[type="radio"] {
+    display: none;
+}
+
+.controls label {
+    border: 3px solid var(--main_blue);
+    border-radius: 10px;
+    padding: 5px 15px;
+    /*display: flex;*/
+    text-align: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--main_blue);
+    min-width: 100px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+label:after {
+    content: "zł ";
+}
+
