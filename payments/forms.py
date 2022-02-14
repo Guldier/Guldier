@@ -26,7 +26,7 @@ class TopUpForm(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Top up your account PLN'),
-            InlineRadios("top_up_amount"),
+            InlineRadios("top_up_amount", css_class='radio_btn'),
             ButtonHolder(
                 Submit('submit', 'Checkout', css_class='mt-2'),
             )
