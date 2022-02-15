@@ -34,19 +34,20 @@ class TopUpView(LoginRequiredMixin, FormView):
         }
     template_name = 'payments/top_up.html'
 
-    def get_context_data(self, request, **kwargs):
+    def get_last_address(self, request):
         try:
             last_address = Address.objects.all().filter(user=request.user).latest('date_created')
         except Address.DoesNotExist:
             last_address = None 
-        context = super().get_context_data(**kwargs)
-        context['last_address'] = last_address
+        return last_address      
 
     def get(self, request, *args, **kwargs):
-        return self.render_to_response(self.get_context_data(request=request))
+        last_address = self.get_last_address(request)
+        return self.render_to_response(self.get_context_data(last_address=last_address))
 
     def form_invalid(self, request, form):
-        return self.render_to_response(self.get_context_data(request=request, form=form))
+        last_address = self.get_last_address(request)
+        return self.render_to_response(self.get_context_data(last_address=last_address, form=form))
 
     def form_valid(self, request, form):
         user = request.user
