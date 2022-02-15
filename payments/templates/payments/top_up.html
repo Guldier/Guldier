@@ -4,18 +4,12 @@
 
 {% block content %}
     <div class="content-section">
-        {% if form.initial %}
-            <p id="form-initial">
-                {{ form.initial.name }} {{ form.initial.surname }}, <br> 
-                {{ form.initial.street_and_number }} {{ form.initial.postal_code }} {{ form.initial.city }}, <br>
-                {{ form.initial.country}}
-            </p>
-        {% endif %}
-        <form class="form-group" action="{% url 'payments:create_checkout_session' %}" method="POST">
+
+        <form class="form-group" action="{% url 'payments:top_up' %}" method="POST">
             {% csrf_token %}
             {% crispy form %}
-
         </form>
+
     </div>
 
 {% block styles %}
@@ -23,7 +17,6 @@
 {% endblock %}
 
 {% block script %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{% static 'payments/scripts/topUpForm.js' %}"></script>
 {% endblock %}
 

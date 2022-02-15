@@ -13,20 +13,8 @@ $(document).ready(function() {
     let initialAddress = $("#form-initial");
     let oldAddress = $('#div_id_address_action');
     let newAddress = $('#new-address');
-    let newAddressFields = $('#new-address input');
-
-    initialAddress.insertAfter('label[for=id_address_action_0');
-
-    newAddressFields.each(function() {
-        this.value = '';
-    });
 
     let newOrOldAddress = $("input[type=radio][name=address_action]");
-
-    // newOrOldAddress.each(function() {
-    //     this.css('display', 'block'); nie dziala
-    //     this.attr('display', 'inline-block'); nie dziala
-    // }); 
 
     if (initialAddress.length > 0) {
         newOrOldAddress.prop('required',true);
@@ -35,13 +23,11 @@ $(document).ready(function() {
 
         newOrOldAddress.change(function() {
             if (this.value == "new") {
-                newAddress.show();
-                // newAddress.slideDown(); nie dziala
-
-                initialAddress.hide();
+                newAddress.slideDown();
+                initialAddress.slideUp();
             } else if (this.value == "last") {
-                newAddress.hide();
-                initialAddress.show();
+                newAddress.slideUp();
+                initialAddress.slideDown();
             }
         });
     } else {

@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, FormView
 from django.utils.decorators import method_decorator
 
 from payments import forms as pay_forms
@@ -24,46 +24,45 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
-class ProductLandingPageView(LoginRequiredMixin, View):
-    related_field = 'redirect_to'
 
-    def get(self, request, *args, **kwargs):
+class TopUpView(LoginRequiredMixin, FormView):
+
+    related_field = 'redirect_to'
+    form_class = pay_forms.AmountAddressForm
+    extra_context = {
+            'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
+        }
+    template_name = 'payments/top_up.html'
+
+    def get_context_data(self, request, **kwargs):
         try:
             last_address = Address.objects.all().filter(user=request.user).latest('date_created')
         except Address.DoesNotExist:
             last_address = None 
-        form = pay_forms.AmountAddressForm(instance=last_address)
-        context = {
-            'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-            'form': form,
-        }
-        return render(request, template_name='payments/top_up.html', context=context)
+        context = super().get_context_data(**kwargs)
+        context['last_address'] = last_address
 
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response(self.get_context_data(request=request))
 
-class CreateCheckoutSessionView(View):
+    def form_invalid(self, request, form):
+        return self.render_to_response(self.get_context_data(request=request, form=form))
 
-    def post(self, request, *args, **kwargs):
+    def form_valid(self, request, form):
         user = request.user
-        form = pay_forms.AmountAddressForm(request.POST)
-        if form.is_valid():
         # get the amount that customer wants to top up his account with
-            topup_value = form.cleaned_data['top_up_amount']
+        topup_value = form.cleaned_data['top_up_amount']
         # get the address for invoice
-            address = Address.objects.create(
-                user=user, 
-                name = form.cleaned_data['name'],
-                surname = form.cleaned_data['surname'],
-                street_and_number = form.cleaned_data['street_and_number'],
-                city = form.cleaned_data['city'],
-                country = form.cleaned_data['country'],
-                postal_code = form.cleaned_data['postal_code'],
-            )
-        else:
-            context = {
-                'STRIPE_PUBLIC_KEY': settings.STRIPE_PUBLIC_KEY,
-                'form': form,
-            }
-            return render(request, template_name='payments/top_up.html', context=context)
+        address = Address.objects.create(
+            user=request.user, 
+            name = form.cleaned_data['name'],
+            surname = form.cleaned_data['surname'],
+            street_and_number = form.cleaned_data['street_and_number'],
+            city = form.cleaned_data['city'],
+            country = form.cleaned_data['country'],
+            postal_code = form.cleaned_data['postal_code'],
+        )
+
         # assign all values needed to open a checkout session with Stripe
         # get success and cancel url
         schema = 'http://'
@@ -99,7 +98,8 @@ class CreateCheckoutSessionView(View):
             cancel_url=cancel_url,
         )
         # redirect to Stripe's checkout session 
-        return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})
+
+        return redirect(checkout_session.url, code=303)
 
 
 class SuccessView(TemplateView):

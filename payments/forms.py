@@ -1,3 +1,4 @@
+from re import template
 from django import forms
 
 from crispy_forms.helper import FormHelper
@@ -38,7 +39,7 @@ class AmountAddressForm(forms.ModelForm):
             InlineRadios('top_up_amount'),
             Fieldset(
                 'Provide data for invoice:'),
-            InlineRadios('address_action'),
+            InlineRadios('address_action', template='crispy/address_choice.html'),
             Fieldset(
                 '',
                 Field('name', css_class='form-control mb-2'),
