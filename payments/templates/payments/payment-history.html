@@ -4,7 +4,7 @@
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Payment history</legend>
             </fieldset>
-        <table class="table">
+        <table class="table table-bordered">
             <thead>
             <tr>
                 <th>Payment date</th>
@@ -17,12 +17,18 @@
                      <tr>
                          <td><p>{{ payment.date_updated }}</p></td>
                          <td><p>{{ payment.amount_full_units }} {{ payment.currency }}</p></td>
-                         <td><p>{{ payment.payment_intent_status }}</p></td>
+                         {% if payment.payment_intent_status == "succeeded" %}
+                            <td><p class="badge badge-pill badge-success"><i class="bi bi-check-circle-fill"></i> succeeded</p></td>
+                         {% else %}
+                            <td><p class="badge badge-pill badge-danger"><i class="bi bi-x-circle-fill"></i> unsuccessful</p></td>
+
+                         {% endif %}
                          <td><p>{{ payment.pk }}</p></td>
                      </tr>
                 {% endfor %}
 
         </table>
+        <i class="fa fa-window-close"></i>
         <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
