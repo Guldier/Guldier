@@ -16,9 +16,16 @@ from users.models import Profile
 
 from .forms import TopUpForm
 from .models import TopUp
-from .schemas import (LineItems, LineItemsSchema, Metadata, MetadataSchema,
-                      PaymentIntentData, PaymentIntentDataSchema, PriceData,
-                      ProductData)
+from .schemas import (
+    LineItems,
+    LineItemsSchema,
+    Metadata,
+    MetadataSchema,
+    PaymentIntentData,
+    PaymentIntentDataSchema,
+    PriceData,
+    ProductData
+)
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -130,8 +137,7 @@ def get_transaction_record(event_body):
         topup = TopUp.payments.get(pk=topup_pk)
         return topup
     except TopUp.DoesNotExist:
-        print('record with this pk does not exist')  # TODO handle error
-        return None
+        return HttpResponse(status=404)
 
 
 def save_id_and_status(event_body, topup, object_type):
