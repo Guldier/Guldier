@@ -36,3 +36,11 @@ class TopUp(models.Model):
     def amount_full_units(self):
         if self.amount:
             return f'{self.amount / 100:.2f}'
+
+
+class ToUpValueAndDiscount(models.Model):
+    top_up_value = models.PositiveSmallIntegerField()
+    discount = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return f'{self.top_up_value}'

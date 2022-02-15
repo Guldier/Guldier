@@ -76,13 +76,13 @@ class CreateCheckoutSessionView(View):
         discount_json = pay_schemas.DiscountDataSchema().dump(discount)
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
-            line_items=[line_items_json,],
+            line_items=[line_items_json, ],
             metadata=metadata_json,
             mode='payment',
             payment_intent_data=payment_intent_data_json,
             success_url=success_url,
             cancel_url=cancel_url,
-            discounts= [discount_json,],
+            discounts=[discount_json, ],
         )
         # redirect to Stripe's checkout session 
         return redirect(checkout_session.url, code=303, context={'message': 'Your account has been topped up.'})

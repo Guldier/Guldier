@@ -4,18 +4,21 @@ from crispy_forms.bootstrap import AppendedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from crispy_forms.bootstrap import InlineRadios
+from .models import ToUpValueAndDiscount
 
 
 class TopUpForm(forms.Form):
 
-    PAYMENTS_VALUE = [
-        ('15', 15),
-        ('25', 25),
-        ('50', 50),
-        ('100', 100),
-        ('200', 200),
-        ('500', 500),
-    ]
+    PAYMENTS_VALUE = [(top_up, top_up) for top_up in ToUpValueAndDiscount.objects.all()]
+
+    # PAYMENTS_VALUE = [
+    #     ('15', 15),
+    #     ('25', 25),
+    #     ('50', 50),
+    #     ('100', 100),
+    #     ('200', 200),
+    #     ('500', 500),
+    # ]
 
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)
