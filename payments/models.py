@@ -1,7 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from users.models import Profile
+from django.db import models
 
 
 class TopUpDateManager(models.Manager):

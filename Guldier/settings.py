@@ -9,12 +9,12 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-from urllib.parse import urljoin
+
+import json
+import os
+from pathlib import Path
 
 import environ
-from pathlib import Path
-import os
-import json
 
 with open('/etc/config.json') as config_file:
     config = json.load(config_file)
@@ -150,3 +150,8 @@ STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
 STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
 
+TOPUP_DATA = {
+    'quantity': 1,
+    'name': 'Top_up',
+    'currency': 'pln',
+}

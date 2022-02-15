@@ -1,5 +1,3 @@
-from django import forms
-
 from crispy_forms.bootstrap import AppendedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
@@ -20,6 +18,7 @@ class TopUpForm(forms.Form):
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)
 
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -31,7 +30,3 @@ class TopUpForm(forms.Form):
                 Submit('submit', 'Checkout', css_class='mt-2'),
             )
         )
-
-
-
-
