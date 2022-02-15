@@ -150,3 +150,8 @@ STRIPE_PUBLIC_KEY = config.get('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = config.get('STRIPE_PRIVATE_KEY')
 STRIPE_WEBHOOK_SECRET = config.get('STRIPE_WEBHOOK_SECRET')
 
+IS_DISCOUNT = True # enable or disable discounts
+DISCOUNT_TRESHOLD = 10000 # grosze! discount applies starting from this amount
+DISCOUNT_PERCENT = 10 # %, set to none if discount is an amount
+DISCOUNT_AMOUNT = None # grosze! set to none if discount is a percentage
+

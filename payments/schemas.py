@@ -1,3 +1,4 @@
+from dataclasses import field
 from marshmallow import Schema, fields
 
 
@@ -29,6 +30,11 @@ class PaymentIntentData:
         self.metadata = metadata
 
 
+class DiscountData:
+    def __init__(self, id=None):
+        self.coupon = id
+
+
 class ProductDataSchema(Schema):
     name = fields.Str()
 
@@ -50,3 +56,7 @@ class MetadataSchema(Schema):
 
 class PaymentIntentDataSchema(Schema):
     metadata = fields.Nested(MetadataSchema)
+
+
+class DiscountDataSchema(Schema):
+    coupon = fields.Str(missing=None)
