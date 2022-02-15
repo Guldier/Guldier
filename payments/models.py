@@ -30,3 +30,8 @@ class TopUp(models.Model):
 
     def __str__(self, *args, **kwargs):
         return str(self.pk)
+
+    @property
+    def amount_full_units(self):
+        if self.amount:
+            return f'{self.amount / 100:.2f}'

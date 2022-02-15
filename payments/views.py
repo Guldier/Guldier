@@ -2,8 +2,6 @@ import stripe
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -41,7 +39,7 @@ class ProductLandingPageView(LoginRequiredMixin, View):
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
             'form': form,
         }
-        return render(request, template_name='top_up.html', context=context)
+        return render(request, template_name='payments/top_up.html', context=context)
 
 
 class CreateCheckoutSessionView(FormView):
@@ -84,11 +82,11 @@ class CreateCheckoutSessionView(FormView):
 
 
 class SuccessView(TemplateView):
-    template_name = 'success.html'
+    template_name = 'payments/success.html'
 
 
 class CancelView(TemplateView):
-    template_name = 'cancel.html'
+    template_name = 'payments/cancel.html'
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -96,6 +94,7 @@ class WebhookView(View):
 
     def post(self, request, *args, **kwargs):
 
+        # endpoint_secret = "whsec_5b54e15f8aabefce01cd3d3e9f18b5dce347935384c58ea09211133145ec28e3"
         payload = request.body
         # header in the response that is coming from Stripe
         sig_header = request.META['HTTP_STRIPE_SIGNATURE']
@@ -174,24 +173,20 @@ def increase_balance(event_body, topup):
     user = topup.user
     try:
         profile = Profile.objects.get(user=user)
-    except ObjectDoesNotExist:
-        return render(request, template_name='payment_failure.html')
+    except Profile.DoesNotExist:
+        return render(request, template_name='payments/payment_failure.html')
 
     profile.money = F('money') + amount_received
     profile.save()
 
 
-@method_decorator(login_required, name='dispatch')
-class PaymentHistoryView(View):
-    def get(self, request):
-        user_payments = TopUp.payments.filter(user=request.user).filter(~Q(payment_intent_status='')).order_by(
-            '-date_created')
-        for payment in user_payments:
-            payment.amount = payment.amount / 100
-        paginator = Paginator(user_payments, 10)
+class PaymentHistoryView(LoginRequiredMixin, ListView):
+    login_url = '/login/'
+    template_name = 'payments/payment-history.html'
+    model = TopUp
+    paginate_by = 10
+    ordering = '-date_created'
 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        return render(request, template_name='payment-history.html',
-                      context={'page_obj': page_obj})
+    def get_queryset(self):
+        user = self.request.user
+        return super().get_queryset().filter(user=user).exclude(payment_intent_status='')

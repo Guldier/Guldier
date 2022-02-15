@@ -1,21 +1,32 @@
 from crispy_forms.bootstrap import AppendedText
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import ButtonHolder, Fieldset, Layout, Submit
-from django import forms
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_forms.bootstrap import InlineRadios
 
 
 class TopUpForm(forms.Form):
-    amount = forms.IntegerField(label='Enter the amount', min_value=15, max_value=10000, required=True)
 
+    PAYMENTS_VALUE = [
+        ('15', 15),
+        ('25', 25),
+        ('50', 50),
+        ('100', 100),
+        ('200', 200),
+        ('500', 500),
+    ]
+
+    top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
+                                      choices=PAYMENTS_VALUE)
+
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Top up your account',
-            ),
-            AppendedText('amount', 'pln'),
+                'Top up your account PLN'),
+            InlineRadios("top_up_amount", css_class='radio_btn'),
             ButtonHolder(
-                Submit('submit', 'Checkout', css_class='mt-2')
+                Submit('submit', 'Checkout', css_class='mt-2'),
             )
         )
