@@ -7,7 +7,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, ListView, FormView
@@ -39,35 +38,44 @@ class TopUpView(LoginRequiredMixin, FormView):
             last_address = Address.objects.all().filter(user=request.user).latest('date_created')
         except Address.DoesNotExist:
             last_address = None 
-        return last_address      
+        return last_address
+
+    def create_new_address(self, user, form):
+        new_address = Address.objects.create(
+                user=user, 
+                name = form.cleaned_data['name'],
+                surname = form.cleaned_data['surname'],
+                street_and_number = form.cleaned_data['street_and_number'],
+                city = form.cleaned_data['city'],
+                country = form.cleaned_data['country'],
+                postal_code = form.cleaned_data['postal_code'],
+            )      
+        return new_address
 
     def get(self, request, *args, **kwargs):
-        last_address = self.get_last_address(request)
-        return self.render_to_response(self.get_context_data(last_address=last_address))
+        return self.render_to_response(self.get_context_data(last_address=self.get_last_address(request)))
 
-    def form_invalid(self, request, form):
-        last_address = self.get_last_address(request)
-        return self.render_to_response(self.get_context_data(last_address=last_address, form=form))
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(last_address=self.get_last_address(self.request), form=form))
 
-    def form_valid(self, request, form):
-        user = request.user
+    def form_valid(self, form):
+        user = self.request.user
+        last_address = self.get_last_address(self.request)
+        # get the address for invoice
+        if last_address:
+            address_choice = form.cleaned_data['address_choice']
+            if address_choice == 'new':
+                address = self.create_new_address(user, form)
+            elif address_choice == 'last':
+                address = last_address
+        else:
+            address = self.create_new_address(user, form)
         # get the amount that customer wants to top up his account with
         topup_value = form.cleaned_data['top_up_amount']
-        # get the address for invoice
-        address = Address.objects.create(
-            user=request.user, 
-            name = form.cleaned_data['name'],
-            surname = form.cleaned_data['surname'],
-            street_and_number = form.cleaned_data['street_and_number'],
-            city = form.cleaned_data['city'],
-            country = form.cleaned_data['country'],
-            postal_code = form.cleaned_data['postal_code'],
-        )
-
         # assign all values needed to open a checkout session with Stripe
         # get success and cancel url
         schema = 'http://'
-        host = request.META['HTTP_HOST']
+        host = self.request.META['HTTP_HOST']
         hostname = host.split(':')[0]
         port = host.split(':')[1]
         success_url = urljoin(schema + hostname + ':' + port, '/payments/success')
@@ -89,9 +97,7 @@ class TopUpView(LoginRequiredMixin, FormView):
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
-            line_items=[
-                line_items_json,
-            ],
+            line_items=[line_items_json,],
             metadata=metadata_json,
             mode='payment',
             payment_intent_data=payment_intent_data_json,

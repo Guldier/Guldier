@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.core.validators import MinValueValidator
 from django.http import HttpResponse
+from django.utils import timezone
 from django.template.loader import render_to_string
 
 mail_sender = settings.DEFAULT_FROM_EMAIL
@@ -75,7 +76,7 @@ class Address(models.Model):
     surname = models.CharField(max_length=128)
     street_and_number = models.CharField(max_length=256)
     city = models.CharField(max_length=128)
-    country = models.CharField(max_length=1280)
+    country = models.CharField(max_length=128)
     postal_code = models.CharField(max_length=6, validators=[postal_code_validator])
 
     def __str__(self, *args, **kwargs):
@@ -91,21 +92,36 @@ class Address(models.Model):
 
 class Invoice(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
+    no_in_month = models.IntegerField(null=True)
     name = models.CharField(max_length=32)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     address = models.ForeignKey(Address, on_delete=models.PROTECT)
     topup = models.ForeignKey(TopUp, on_delete=models.PROTECT)
 
-    def __str__(self, *args, **kwargs):
-        return str(self.name)
 
     def save_name(self, *args, **kwargs):
+        try:
+            months_last_invoice = Invoice.objects.exclude(pk=self.pk).filter(
+                date_created__month=self.date_created.month,
+                date_created__year=self.date_created.year,
+            ).latest('date_created')
+        except Invoice.DoesNotExist:
+            months_last_invoice = None
+        breakpoint()
+        if months_last_invoice:
+            self.no_in_month = months_last_invoice.no_in_month + 1
+        else:
+            self.no_in_month = 1
+        super().save(*args, **kwargs)
         self.name = 'G/{}/{}/{}'.format(
-            self.pk, 
-            '{:02d}'.format(self.date_created.month), 
+            self.no_in_month, 
+            '{:02d}'.format(self.date_created.month),
             self.date_created.year
             )
         super().save(*args, **kwargs)
+    
+    def __str__(self, *args, **kwargs):
+        return str(self.name)
 
     def write_invoice_to_pdf(self, request, target):
         date_format = '%d-%m-%Y'

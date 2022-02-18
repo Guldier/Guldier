@@ -14,7 +14,7 @@ $(document).ready(function() {
     let oldAddress = $('#div_id_address_action');
     let newAddress = $('#new-address');
 
-    let newOrOldAddress = $("input[type=radio][name=address_action]");
+    let newOrOldAddress = $("input[type=radio][name=address_choice]");
 
     if (initialAddress.length > 0) {
         newOrOldAddress.prop('required',true);

@@ -8,7 +8,7 @@ from crispy_forms.bootstrap import InlineRadios
 from .models import Address
 
 
-class AmountAddressForm(forms.ModelForm):
+class AmountAddressForm(forms.Form):
 
     PAYMENTS_VALUE = [
         ('15', 15),
@@ -22,13 +22,20 @@ class AmountAddressForm(forms.ModelForm):
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)
     
-    ADDRESS_ACTIONS = [
+    ADDRESS_CHOICE = [
         ('last', ' Use the last used address:'),
         ('new', ' Use a new address'),
     ]
 
-    address_action = forms.ChoiceField(widget=forms.RadioSelect, required=False,
-                                      choices=ADDRESS_ACTIONS)
+    address_choice = forms.ChoiceField(widget=forms.RadioSelect, required=False,
+                                      choices=ADDRESS_CHOICE)
+
+    name = forms.CharField(max_length=128, required=False)
+    surname = forms.CharField(max_length=128, required=False)
+    street_and_number = forms.CharField(max_length=256, required=False)
+    city = forms.CharField(max_length=128, required=False)
+    country = forms.CharField(max_length=128, required=False)
+    postal_code = forms.CharField(max_length=6, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,7 +46,7 @@ class AmountAddressForm(forms.ModelForm):
             InlineRadios('top_up_amount'),
             Fieldset(
                 'Provide data for invoice:'),
-            InlineRadios('address_action', template='crispy/address_choice.html'),
+            InlineRadios('address_choice', template='crispy/address_choice.html'),
             Fieldset(
                 '',
                 Field('name', css_class='form-control mb-2'),
@@ -54,6 +61,6 @@ class AmountAddressForm(forms.ModelForm):
             ),
         )
     
-    class Meta:
-        model = Address
-        fields = ['name', 'surname', 'street_and_number', 'city', 'country', 'postal_code']
+    # class Meta:
+    #     model = Address
+    #     fields = ['name', 'surname', 'street_and_number', 'city', 'country', 'postal_code']
