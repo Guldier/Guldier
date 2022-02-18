@@ -14,6 +14,7 @@ from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
 from payments.models import TopUp
+from .utils import get_or_none
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -22,7 +23,6 @@ endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
 class ProductLandingPageView(LoginRequiredMixin, View):
-
     related_field = 'redirect_to'
 
     def get(self, request, *args, **kwargs):
@@ -31,6 +31,7 @@ class ProductLandingPageView(LoginRequiredMixin, View):
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
             'form': form,
         }
+        request.session['promotion_id'] = form.promotion_id
         return render(request, template_name='top_up.html', context=context)
 
 
@@ -41,6 +42,7 @@ class CreateCheckoutSessionView(View):
         form = pay_forms.TopUpForm(request.POST)
         if form.is_valid():
             topup_value = form.cleaned_data['top_up_amount']
+            promotion_id = request.session.get('promotion_id')
         else:
             return redirect('payments:top_up')
         # assign all values needed to open a checkout session with Stripe
@@ -67,13 +69,21 @@ class CreateCheckoutSessionView(View):
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
-        # create a coupon if discounts are on
-        if settings.IS_DISCOUNT and intent_value >= settings.DISCOUNT_TRESHOLD:
-            coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=settings.DISCOUNT_PERCENT, amount_off=settings.DISCOUNT_AMOUNT, currency=currency)
+
+        # create a coupon if discount is on
+
+        promotion_get = get_or_none(pay_models.Promotion, id=promotion_id)
+
+        if promotion_id and promotion_get and promotion_get.is_on:
+            discount_get = promotion_get.discounts.filter(top_up_value__exact=topup_value).get().discount
+            coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=discount_get,
+                                          amount_off=None, currency=currency)
             discount = pay_schemas.DiscountData(id=coupon.id)
         else:
             discount = pay_schemas.DiscountData()
+
         discount_json = pay_schemas.DiscountDataSchema().dump(discount)
+
         # open checkout session with Stripe with jsons
         checkout_session = stripe.checkout.Session.create(
             line_items=[line_items_json, ],
@@ -116,24 +126,27 @@ class WebhookView(View):
             # Invalid signature
             return HttpResponse(status=400)
 
-        #get payload and type of object that came in the event
+        # get payload and type of object that came in the event
         event_body, object_type = get_event_payload_and_type(event)
-        #only checkout_session, payment_intent and charge objects come back with metadata
+        # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body.metadata, 'topup_pk', None):
-            topup = get_transaction_record(event_body) # find transaction's record in database
-            save_id_and_status(event_body, topup, object_type) # save event's id and status
+            topup = get_transaction_record(event_body)  # find transaction's record in database
+            save_id_and_status(event_body, topup, object_type)  # save event's id and status
             if event.type == 'payment_intent.created':
-                save_amount_data(event_body, topup) 
-                is_live_mode(event_body, topup) # flags if test or live
+                save_amount_data(event_body, topup)
+                is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
-                increase_balance(event_body, topup) # add funds to user's account
+                breakpoint()
+                increase_balance(event_body, topup)  # add funds to user's account
             topup.save()
         return HttpResponse(status=200)
+
 
 def get_event_payload_and_type(event):
     event_body = event.data.object
     object_type = event_body.object
     return event_body, object_type
+
 
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
@@ -141,8 +154,9 @@ def get_transaction_record(event_body):
         topup = pay_models.TopUp.payments.get(pk=topup_pk)
         return topup
     except pay_models.TopUp.DoesNotExist:
-        print('record with this pk does not exist') #TODO handle error
+        print('record with this pk does not exist')  # TODO handle error
         return None
+
 
 def save_id_and_status(event_body, topup, object_type):
     if object_type == 'checkout.session':
@@ -156,18 +170,22 @@ def save_id_and_status(event_body, topup, object_type):
         topup.charge_id = event_body.id
     return topup
 
+
 def save_email(event_body, topup):
     topup.customer_email = event_body.email
     return topup
+
 
 def save_amount_data(event_body, topup):
     topup.amount = event_body.amount
     topup.currency = event_body.currency
     return topup
 
+
 def is_live_mode(event_body, topup):
     topup.live_mode = event_body.livemode
     return topup
+
 
 def increase_balance(event_body, topup):
     amount_received = int(event_body.amount / 100)
