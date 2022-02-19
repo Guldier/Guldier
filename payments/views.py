@@ -42,6 +42,10 @@ class CreateCheckoutSessionView(View):
         form = pay_forms.TopUpForm(request.POST)
         if form.is_valid():
             topup_value = form.cleaned_data['top_up_amount']
+            try:
+                discount = pay_models.ToUpValueAndDiscount(top_up_value=topup_value).discount
+            except pay_models.ToUpValueAndDiscount.DoesNotExist:
+                discount = None
             promotion_id = request.session.get('promotion_id')
         else:
             return redirect('payments:top_up')
@@ -65,7 +69,7 @@ class CreateCheckoutSessionView(View):
         # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
         user = request.user
         topup_pk = pay_models.TopUp.payments.create(user=user).pk
-        metadata = pay_schemas.Metadata(topup_pk=topup_pk)
+        metadata = pay_schemas.Metadata(topup_pk=topup_pk, top_up_value=topup_value, discount=discount)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
