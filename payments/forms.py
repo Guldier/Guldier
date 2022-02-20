@@ -12,8 +12,20 @@ from .utils import calculate_discounts
 
 class TopUpForm(forms.Form):
     promotions = Promotion.objects.all()
+    promotion_id = None
 
-    PAYMENTS_VALUE, promotion_id = calculate_discounts(promotions.iterator())
+    if len(promotions) > 0:
+        PAYMENTS_VALUE, promotion_id = calculate_discounts(promotions)
+
+    else:
+        PAYMENTS_VALUE = [
+            ('15', 15),
+            ('25', 25),
+            ('50', 50),
+            ('100', 100),
+            ('200', 200),
+            ('500', 500),
+        ]
 
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)

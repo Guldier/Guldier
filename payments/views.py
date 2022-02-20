@@ -41,14 +41,11 @@ class CreateCheckoutSessionView(View):
         # get the amount that customer wants to top up his account with
         form = pay_forms.TopUpForm(request.POST)
         if form.is_valid():
-            topup_value = form.cleaned_data['top_up_amount']
-            try:
-                discount = pay_models.ToUpValueAndDiscount(top_up_value=topup_value).discount
-            except pay_models.ToUpValueAndDiscount.DoesNotExist:
-                discount = None
+            topup_value = int(form.cleaned_data['top_up_amount'])
             promotion_id = request.session.get('promotion_id')
         else:
             return redirect('payments:top_up')
+
         # assign all values needed to open a checkout session with Stripe
         # get success and cancel url
         schema = 'http://'
@@ -58,7 +55,7 @@ class CreateCheckoutSessionView(View):
         success_url = urljoin(schema + hostname + ':' + port, '/payments/success')
         cancel_url = urljoin(schema + hostname + ':' + port, '/payments/cancel')
         # get line items json
-        intent_value = int(topup_value) * 100
+        intent_value = topup_value * 100
         quantity = 1
         name = 'Top up'
         currency = 'pln'
@@ -69,12 +66,12 @@ class CreateCheckoutSessionView(View):
         # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
         user = request.user
         topup_pk = pay_models.TopUp.payments.create(user=user).pk
-        metadata = pay_schemas.Metadata(topup_pk=topup_pk, top_up_value=topup_value, discount=discount)
+        metadata = pay_schemas.Metadata(topup_pk=topup_pk, top_up_value=topup_value)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
         payment_intent_data_json = pay_schemas.PaymentIntentDataSchema().dump(payment_intent_data)
 
-        # create a coupon if discount is on
+        # create a coupon if promotion is on
 
         promotion_get = get_or_none(pay_models.Promotion, id=promotion_id)
 
@@ -131,17 +128,23 @@ class WebhookView(View):
             return HttpResponse(status=400)
 
         # get payload and type of object that came in the event
+
         event_body, object_type = get_event_payload_and_type(event)
+
+        if object_type == 'checkout.session':
+            breakpoint()
+
         # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body.metadata, 'topup_pk', None):
+
             topup = get_transaction_record(event_body)  # find transaction's record in database
             save_id_and_status(event_body, topup, object_type)  # save event's id and status
             if event.type == 'payment_intent.created':
                 save_amount_data(event_body, topup)
                 is_live_mode(event_body, topup)  # flags if test or live
             elif event.type == 'payment_intent.succeeded':
-                breakpoint()
-                increase_balance(event_body, topup)  # add funds to user's account
+
+                increase_balance(request, event_body, topup)  # add funds to user's account
             topup.save()
         return HttpResponse(status=200)
 
@@ -191,8 +194,8 @@ def is_live_mode(event_body, topup):
     return topup
 
 
-def increase_balance(event_body, topup):
-    amount_received = int(event_body.amount / 100)
+def increase_balance(request, event_body, topup):
+    amount_received = event_body.metadata.top_up_value
     user = topup.user
     try:
         profile = Profile.objects.get(user=user)

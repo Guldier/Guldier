@@ -51,7 +51,7 @@ class Promotion(models.Model):
 class ToUpValueAndDiscount(models.Model):
     top_up_value = models.PositiveSmallIntegerField()
     discount = models.PositiveSmallIntegerField()
-    promotion = models.ForeignKey(Promotion, related_name='discounts', on_delete=models.PROTECT)
+    promotion = models.ForeignKey(Promotion, related_name='discounts', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.top_up_value}'

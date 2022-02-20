@@ -17,15 +17,14 @@ class PriceData:
 class LineItems:
     def __init__(self, price_data, quantity):
         self.price_data = price_data
-        self.quantity = quantity 
+        self.quantity = quantity
 
 
 class Metadata:
-    def __init__(self, topup_pk, top_up_value, discount):
-        self.topup_pk =  topup_pk
+    def __init__(self, topup_pk, top_up_value):
+        self.topup_pk = topup_pk
         self.top_up_value = top_up_value
-        self.discount = discount
-        
+
 
 class PaymentIntentData:
     def __init__(self, metadata):
@@ -55,7 +54,6 @@ class LineItemsSchema(Schema):
 class MetadataSchema(Schema):
     topup_pk = fields.Int()
     top_up_value = fields.Int()
-    discount = fields.Int(missing=None)
 
 
 class PaymentIntentDataSchema(Schema):
