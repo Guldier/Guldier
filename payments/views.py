@@ -131,21 +131,21 @@ class WebhookView(View):
 
         event_body, object_type = get_event_payload_and_type(event)
 
-        if object_type == 'checkout.session':
-            breakpoint()
+        # if object_type == 'discount':
+        #     breakpoint()
 
         # only checkout_session, payment_intent and charge objects come back with metadata
-        if getattr(event_body.metadata, 'topup_pk', None):
+        if getattr(event_body, 'metadata', None):
+            if getattr(event_body.metadata, 'topup_pk', None):
+                topup = get_transaction_record(event_body)  # find transaction's record in database
+                save_id_and_status(event_body, topup, object_type)  # save event's id and status
+                if event.type == 'payment_intent.created':
+                    save_amount_data(event_body, topup)
+                    is_live_mode(event_body, topup)  # flags if test or live
+                elif event.type == 'payment_intent.succeeded':
 
-            topup = get_transaction_record(event_body)  # find transaction's record in database
-            save_id_and_status(event_body, topup, object_type)  # save event's id and status
-            if event.type == 'payment_intent.created':
-                save_amount_data(event_body, topup)
-                is_live_mode(event_body, topup)  # flags if test or live
-            elif event.type == 'payment_intent.succeeded':
-
-                increase_balance(request, event_body, topup)  # add funds to user's account
-            topup.save()
+                    increase_balance(request, event_body, topup)  # add funds to user's account
+                topup.save()
         return HttpResponse(status=200)
 
 
