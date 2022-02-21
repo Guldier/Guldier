@@ -1,3 +1,5 @@
+from distutils.command.clean import clean
+from operator import add
 from re import template
 from django import forms
 
@@ -8,7 +10,7 @@ from crispy_forms.bootstrap import InlineRadios
 from .models import Address
 
 
-class AmountAddressForm(forms.Form):
+class AmountAddressForm(forms.ModelForm):
 
     PAYMENTS_VALUE = [
         ('15', 15),
@@ -21,13 +23,14 @@ class AmountAddressForm(forms.Form):
 
     top_up_amount = forms.ChoiceField(required=True, widget=forms.RadioSelect,
                                       choices=PAYMENTS_VALUE)
-    
+    ADDRESS_NEW = 'new'
+    ADDRESS_LAST = 'last'
     ADDRESS_CHOICE = [
-        ('last', ' Use the last used address:'),
-        ('new', ' Use a new address'),
+        (ADDRESS_LAST, ' Use the last used address:'),
+        (ADDRESS_NEW, ' Use a new address'),
     ]
 
-    address_choice = forms.ChoiceField(widget=forms.RadioSelect, required=False,
+    address_choice = forms.ChoiceField(widget=forms.RadioSelect, required=True,
                                       choices=ADDRESS_CHOICE)
 
     name = forms.CharField(max_length=128, required=False)
@@ -38,7 +41,10 @@ class AmountAddressForm(forms.Form):
     postal_code = forms.CharField(max_length=6, required=False)
 
     def __init__(self, *args, **kwargs):
+        address_choice_is_hidden = kwargs.pop('address_choice_is_hidden', None)
         super().__init__(*args, **kwargs)
+        if address_choice_is_hidden:
+            self.fields['address_choice'].widget = forms.HiddenInput()
         self.helper = FormHelper(self)
         self.helper.layout = Layout( 
             Fieldset(
@@ -61,6 +67,15 @@ class AmountAddressForm(forms.Form):
             ),
         )
     
-    # class Meta:
-    #     model = Address
-    #     fields = ['name', 'surname', 'street_and_number', 'city', 'country', 'postal_code']
+    class Meta:
+        model = Address
+        fields = ['name', 'surname', 'street_and_number', 'city', 'country', 'postal_code']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        address_choice = cleaned_data.get('address_choice')
+        if address_choice == self.ADDRESS_NEW:
+            msg = 'This field is required'
+            for field in self._meta.fields:
+                if cleaned_data.get(field) is '':
+                    self.add_error(field, msg)

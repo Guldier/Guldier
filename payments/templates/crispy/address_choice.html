@@ -1,9 +1,8 @@
 {% load crispy_forms_filters %}
 {% load l10n %}
-{% if last_address %}
-    {% if field.is_hidden %}
+{% if field.is_hidden %}
     {{ field }}
-    {% else %}
+{% else %}
     <div id="div_{{ field.auto_id }}" class="form-group{% if wrapper_class %} {{ wrapper_class }}{% endif %}{% if form_show_errors and field.errors %} has-error{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
 
         {% if field.label %}
@@ -37,5 +36,4 @@
         </div>
 
     </div>
-    {% endif %}
 {% endif %}

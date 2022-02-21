@@ -25,7 +25,6 @@ endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
 class TopUpView(LoginRequiredMixin, FormView):
-
     related_field = 'redirect_to'
     form_class = pay_forms.AmountAddressForm
     extra_context = {
@@ -34,42 +33,44 @@ class TopUpView(LoginRequiredMixin, FormView):
     template_name = 'payments/top_up.html'
 
     def get_last_address(self, request):
-        try:
-            last_address = Address.objects.all().filter(user=request.user).latest('date_created')
-        except Address.DoesNotExist:
-            last_address = None 
-        return last_address
+        return Address.objects.filter(user=request.user).order_by('date_created').last()
 
-    def create_new_address(self, user, form):
-        new_address = Address.objects.create(
-                user=user, 
-                name = form.cleaned_data['name'],
-                surname = form.cleaned_data['surname'],
-                street_and_number = form.cleaned_data['street_and_number'],
-                city = form.cleaned_data['city'],
-                country = form.cleaned_data['country'],
-                postal_code = form.cleaned_data['postal_code'],
-            )      
-        return new_address
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['last_address'] = self.get_last_address(request=self.request)
+        return context
 
-    def get(self, request, *args, **kwargs):
-        return self.render_to_response(self.get_context_data(last_address=self.get_last_address(request)))
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        last_address = self.get_last_address(request=self.request)
+        if not last_address:
+            kwargs['address_choice_is_hidden'] = True
+        return kwargs
 
-    def form_invalid(self, form):
-        return self.render_to_response(self.get_context_data(last_address=self.get_last_address(self.request), form=form))
+    def get_initial(self):
+        """Return the initial data to use for forms on this view."""
+        initial = super().get_initial()
+        last_address = self.get_last_address(request=self.request)
+        if not last_address:
+            initial['address_choice'] = self.form_class.ADDRESS_NEW
+        return initial
 
     def form_valid(self, form):
         user = self.request.user
         last_address = self.get_last_address(self.request)
-        # get the address for invoice
+        # get the address for invoicez
         if last_address:
             address_choice = form.cleaned_data['address_choice']
-            if address_choice == 'new':
-                address = self.create_new_address(user, form)
-            elif address_choice == 'last':
+            if address_choice == form.ADDRESS_NEW:
+                address = form.save(commit=False)
+                address.user = user
+                address.save()
+            elif address_choice == form.ADDRESS_LAST:
                 address = last_address
         else:
-            address = self.create_new_address(user, form)
+            address = form.save(commit=False)
+            address.user = user
+            address.save()
         # get the amount that customer wants to top up his account with
         topup_value = form.cleaned_data['top_up_amount']
         # assign all values needed to open a checkout session with Stripe
@@ -90,7 +91,7 @@ class TopUpView(LoginRequiredMixin, FormView):
         line_items = pay_schemas.LineItems(price_data=price_data, quantity=quantity)
         line_items_json = pay_schemas.LineItemsSchema().dump(line_items)
         # get metadatas with id of empty transaction for currently logged in user to retrieve it back in wehbhooks
-        topup_pk = pay_models.TopUp.payments.create(user=user).pk
+        topup_pk = pay_models.TopUp.objects.create(user=user).pk
         metadata = pay_schemas.Metadata(topup_pk=topup_pk, address_pk=address.pk)
         metadata_json = pay_schemas.MetadataSchema().dump(metadata)
         payment_intent_data = pay_schemas.PaymentIntentData(metadata=metadata)
@@ -128,11 +129,8 @@ class WebhookView(View):
             event = stripe.Webhook.construct_event(
                 payload, sig_header, endpoint_secret
             )
-        except ValueError as e:
-            # Invalid payload
-            return HttpResponse(status=400)
-        except stripe.error.SignatureVerificationError as e:
-            # Invalid signature
+        except (ValueError, stripe.error.SignatureVerificationError):
+            # Invalid payload or signature
             return HttpResponse(status=400)
 
         # get payload and type of object that came in the event
@@ -149,8 +147,9 @@ class WebhookView(View):
                 increase_balance(request, event_body, topup) # add funds to user's account
                 topup.save()
                 invoice = topup.create_invoice(event_body)
-                if invoice:
-                    invoice.send_email_with_invoice(request) # send invoice to currently logged user's (! )e-mail
+                invoice.name = Invoice.get_name(invoice)
+                invoice.save()
+                invoice.send_email_with_invoice(request) # send invoice to currently logged user's (! )e-mail
 
             topup.save()
         return HttpResponse(status=200)
@@ -165,7 +164,7 @@ def get_event_payload_and_type(event):
 def get_transaction_record(event_body):
     topup_pk = event_body.metadata.topup_pk
     try:
-        topup = pay_models.TopUp.payments.get(pk=topup_pk)
+        topup = pay_models.TopUp.objects.get(pk=topup_pk)
         return topup
     except pay_models.TopUp.DoesNotExist:
         return HttpResponse(status=404)

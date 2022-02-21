@@ -10,28 +10,4 @@ $(document).ready(function() {
         }
     });
 
-    let initialAddress = $("#form-initial");
-    let oldAddress = $('#div_id_address_action');
-    let newAddress = $('#new-address');
-
-    let newOrOldAddress = $("input[type=radio][name=address_choice]");
-
-    if (initialAddress.length > 0) {
-        newOrOldAddress.prop('required',true);
-        newAddress.hide();
-        oldAddress.show();
-
-        newOrOldAddress.change(function() {
-            if (this.value == "new") {
-                newAddress.slideDown();
-                initialAddress.slideUp();
-            } else if (this.value == "last") {
-                newAddress.slideUp();
-                initialAddress.slideDown();
-            }
-        });
-    } else {
-        oldAddress.hide();
-        newAddress.show();
-    }
 });
