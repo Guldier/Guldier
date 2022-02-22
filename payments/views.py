@@ -58,7 +58,7 @@ class TopUpView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         user = self.request.user
         last_address = self.get_last_address(self.request)
-        # get the address for invoicez
+        # get the address for invoice
         if last_address:
             address_choice = form.cleaned_data['address_choice']
             if address_choice == form.ADDRESS_NEW:

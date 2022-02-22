@@ -87,7 +87,7 @@ class Invoice(models.Model):
     name = models.CharField(max_length=32)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     address = models.ForeignKey(Address, on_delete=models.PROTECT)
-    topup = models.ForeignKey(TopUp, on_delete=models.PROTECT)
+    topup = models.OneToOneField(TopUp, on_delete=models.PROTECT)
 
     @classmethod
     def get_name(cls, invoice, *args, **kwargs):
