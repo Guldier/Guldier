@@ -13,8 +13,8 @@ from payments import models as pay_models
 from payments import schemas as pay_schemas
 from urllib.parse import urljoin
 from users.models import Profile
-from payments.models import TopUp
-from .utils import get_or_none
+
+
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -31,7 +31,7 @@ class ProductLandingPageView(LoginRequiredMixin, View):
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLIC_KEY,
             'form': form,
         }
-        request.session['promotion_id'] = form.promotion_id
+
         return render(request, template_name='top_up.html', context=context)
 
 
@@ -42,7 +42,7 @@ class CreateCheckoutSessionView(View):
         form = pay_forms.TopUpForm(request.POST)
         if form.is_valid():
             topup_value = int(form.cleaned_data['top_up_amount'])
-            promotion_id = request.session.get('promotion_id')
+
         else:
             return redirect('payments:top_up')
 
@@ -73,12 +73,17 @@ class CreateCheckoutSessionView(View):
 
         # create a coupon if promotion is on
 
-        promotion_get = get_or_none(pay_models.Promotion, id=promotion_id)
+        price_get = pay_models.Price.objects.filter(amount__exact=topup_value).first()
 
-        if promotion_id and promotion_get and promotion_get.is_on:
-            discount_get = promotion_get.discounts.filter(top_up_value__exact=topup_value).get().discount
-            coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=discount_get,
-                                          amount_off=None, currency=currency)
+        if price_get and price_get.promotion.active and price_get.promotion.active_dates.date_within_range:
+            percent_off, amount_off = None, None
+            if price_get.promotion.is_percent:
+                percent_off = price_get.promotion.discount
+            else:
+                amount_off = price_get.promotion.discount
+            coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=percent_off,
+                                          amount_off=amount_off, currency=currency)
+            breakpoint()
             discount = pay_schemas.DiscountData(id=coupon.id)
         else:
             discount = pay_schemas.DiscountData()
@@ -209,7 +214,7 @@ def increase_balance(request, event_body, topup):
 class PaymentHistoryView(LoginRequiredMixin, ListView):
     login_url = '/login/'
     template_name = 'payment-history.html'
-    model = TopUp
+    model = pay_models.TopUp
     paginate_by = 10
     ordering = '-date_created'
 

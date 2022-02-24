@@ -12,7 +12,7 @@ def calculate_discounts(promotions):
                 if value.discount > 0:
                     price_value = (value.top_up_value,
                                    str(value.top_up_value) +
-                                   f' for {value.top_up_value - float(value.top_up_value * (value.discount / 100)):.2f}'
+                                   f' za {value.top_up_value - float(value.top_up_value * (value.discount / 100)):.2f}'
                                    )
 
                 values_discounts.append(price_value)
@@ -21,8 +21,4 @@ def calculate_discounts(promotions):
     return values_discounts, None
 
 
-def get_or_none(model, *args, **kwargs):
-    try:
-        return model.objects.get(*args, **kwargs)
-    except model.DoesNotExist:
-        return None
+

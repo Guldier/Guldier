@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from users.models import Profile
 
+from datetime import date
+
 
 class TopUpDateManager(models.Manager):
     def get_queryset(self):
@@ -39,19 +41,42 @@ class TopUp(models.Model):
 
 
 class Promotion(models.Model):
-    name = models.CharField(max_length=256, default=f'Please change me')
-    is_on = models.BooleanField(default=False)
-    start_date = models.DateField(blank=True)
-    end_date = models.DateField(blank=True)
+    name = models.CharField(max_length=256)
+    active = models.BooleanField(default=False)
+    discount = models.IntegerField(default=0)
+    is_percent = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    active_dates = models.ForeignKey('PromotionDateRange', related_name='active_dates',
+                                     on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{self.name} zniżka {self.discount}' + ('%' if self.is_percent else 'zł')
 
 
-class ToUpValueAndDiscount(models.Model):
-    top_up_value = models.PositiveSmallIntegerField()
-    discount = models.PositiveSmallIntegerField()
-    promotion = models.ForeignKey(Promotion, related_name='discounts', on_delete=models.CASCADE)
+class Price(models.Model):
+    amount = models.IntegerField()
+    promotion = models.ForeignKey(Promotion, related_name='promotion', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.top_up_value}'
+        return f'{self.amount}'
+
+    @property
+    def get_discounted_price(self):
+
+        if self.promotion.is_percent:
+            return float(self.amount - self.amount * self.promotion.discount / 100)
+        return self.amount - self.promotion.discount
+
+
+class PromotionDateRange(models.Model):
+    name = models.CharField(max_length=256, blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.name}: {self.start_date} - {self.end_date}'
+
+    @property
+    def date_within_range(self):
+        """Checking if today`s date is between promotion start and end date"""
+        return True if self.start_date <= date.today() <= self.end_date else False

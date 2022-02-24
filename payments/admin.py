@@ -1,16 +1,21 @@
 from django.contrib import admin
 
-from .models import TopUp, ToUpValueAndDiscount, Promotion
+from .models import TopUp, Price, Promotion, PromotionDateRange
 
 
-class DiscountAndPriceAdmin(admin.ModelAdmin):
-    list_display = ('top_up_value', 'discount', 'promotion')
+class PriceAdmin(admin.ModelAdmin):
+    list_display = ('amount', 'promotion')
 
 
-class PromotionDisp(admin.ModelAdmin):
-    list_display = ('name', 'is_on', 'start_date', 'end_date')
+class PromotionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'active', 'discount', 'is_percent', 'notes', 'active_dates')
+
+
+class DatesAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_date', 'end_date')
 
 
 admin.site.register(TopUp)
-admin.site.register(Promotion, PromotionDisp)
-admin.site.register(ToUpValueAndDiscount, DiscountAndPriceAdmin)
+admin.site.register(Promotion, PromotionAdmin)
+admin.site.register(Price, PriceAdmin)
+admin.site.register(PromotionDateRange)
