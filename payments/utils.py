@@ -1,24 +1,8 @@
-from datetime import date
+from payments import models as pay_models
 
 
-def calculate_discounts(promotions):
-    """Crate discounts for given promotion, only first promotion which is set to ON is taken under consideration"""
-    values_discounts = []
-    date_today = date.today()
-    for promotion in promotions:
-        if promotion.is_on and promotion.start_date <= date_today <= promotion.end_date:
-            for value in promotion.discounts.all().order_by('top_up_value'):
-                price_value = value.top_up_value, value.top_up_value
-                if value.discount > 0:
-                    price_value = (value.top_up_value,
-                                   str(value.top_up_value) +
-                                   f' za {value.top_up_value - float(value.top_up_value * (value.discount / 100)):.2f}'
-                                   )
-
-                values_discounts.append(price_value)
-
-            return values_discounts, promotion.id
-    return values_discounts, None
-
-
-
+def get_current_prices():
+    return [(price.amount, str(price.amount) + ' za ' + f'{price.get_discounted_price:.2f}')
+            if price.promotion.active_dates.date_within_range
+            and price.promotion.active else (price.amount, price.amount)
+            for price in pay_models.Price.objects.all().order_by('amount')]

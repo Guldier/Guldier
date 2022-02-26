@@ -80,10 +80,10 @@ class CreateCheckoutSessionView(View):
             if price_get.promotion.is_percent:
                 percent_off = price_get.promotion.discount
             else:
-                amount_off = price_get.promotion.discount
+                amount_off = price_get.promotion.discount * 100
             coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=percent_off,
                                           amount_off=amount_off, currency=currency)
-            breakpoint()
+
             discount = pay_schemas.DiscountData(id=coupon.id)
         else:
             discount = pay_schemas.DiscountData()
@@ -135,9 +135,6 @@ class WebhookView(View):
         # get payload and type of object that came in the event
 
         event_body, object_type = get_event_payload_and_type(event)
-
-        # if object_type == 'discount':
-        #     breakpoint()
 
         # only checkout_session, payment_intent and charge objects come back with metadata
         if getattr(event_body, 'metadata', None):
