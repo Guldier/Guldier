@@ -1,11 +1,23 @@
 import csv
+import xml
 
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from django.core import serializers
+
 from .models import Address, TopUp, Invoice
+
+
+def export_to_xml(modeladmin, request, queryset):
+    opts = modeladmin.model._meta
+    dane = Invoice.objects.all()
+    queryset = serializers.serialize('xml', dane, fields=('name', 'user'))gi
+    return HttpResponse(queryset, content_type="application/xml")
+export_to_xml.short_description = "Download selected as .xml"
+
 
 
 def export_to_csv(modeladmin, request, queryset):
@@ -49,8 +61,8 @@ class TopUpAdmin(admin.ModelAdmin):
 
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ['id', get_invoice, 'date_created', 'name', 'user', 'address', 'topup']
-    list_filter = ['id', 'date_created', 'name', 'user', 'address', 'topup']  
-
+    list_filter = ['id', 'date_created', 'name', 'user', 'address', 'topup'] #tutaj podajemy dane jakie mają się pokazać w xml
+    actions = [export_to_xml]
 
 admin.site.register(TopUp, TopUpAdmin)
 admin.site.register(Address)
