@@ -73,14 +73,14 @@ class CreateCheckoutSessionView(View):
 
         # create a coupon if promotion is on
 
-        price_get = pay_models.Price.objects.filter(amount__exact=topup_value).first()
+        price_get = pay_models.Price.objects.filter(amount__exact=topup_value*100).first()
 
         if price_get and price_get.promotion.active and price_get.promotion.active_dates.date_within_range:
             percent_off, amount_off = None, None
             if price_get.promotion.is_percent:
                 percent_off = price_get.promotion.discount
             else:
-                amount_off = price_get.promotion.discount * 100
+                amount_off = price_get.promotion.discount
             coupon = stripe.Coupon.create(id=f'coupon_{topup_pk}', percent_off=percent_off,
                                           amount_off=amount_off, currency=currency)
 

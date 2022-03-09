@@ -43,29 +43,36 @@ class TopUp(models.Model):
 class Promotion(models.Model):
     name = models.CharField(max_length=256)
     active = models.BooleanField(default=False)
-    discount = models.IntegerField(default=0)
+    discount = models.IntegerField(default=0, help_text='wartość w groszach jeżeli w procentach prosze zaznaczyć pole poniżej')
     is_percent = models.BooleanField(default=True)
     notes = models.TextField(blank=True)
     active_dates = models.ForeignKey('PromotionDateRange', related_name='active_dates',
                                      on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f'{self.name} zniżka {self.discount}' + ('%' if self.is_percent else 'zł')
+        return f'{self.name} zniżka {self.discount}' + ('%' if self.is_percent else 'groszy')
+
+    @property
+    def get_in_zl(self):
+        return self.discount / 100
 
 
 class Price(models.Model):
-    amount = models.IntegerField()
-    promotion = models.ForeignKey(Promotion, related_name='promotion', on_delete=models.CASCADE)
+    amount = models.IntegerField(help_text='proszę podać wartość w groszach')
+    promotion = models.ForeignKey(Promotion, blank=True, null=True, related_name='promotion', on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.amount}'
 
     @property
-    def get_discounted_price(self):
+    def get_in_zl(self):
+        return int(self.amount / 100)
 
+    @property
+    def get_discounted_price(self):
         if self.promotion.is_percent:
-            return float(self.amount - self.amount * self.promotion.discount / 100)
-        return self.amount - self.promotion.discount
+            return float(self.get_in_zl - self.get_in_zl * self.promotion.discount / 100)
+        return self.get_in_zl - self.promotion.get_in_zl
 
 
 class PromotionDateRange(models.Model):
