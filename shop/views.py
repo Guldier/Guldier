@@ -20,7 +20,7 @@ from users.models import (
 
 
 startTime = time(3,00)
-endTime = time(10,00)
+endTime = time(9,00)
 
 def check_time():
     now = datetime.now()
