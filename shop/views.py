@@ -112,8 +112,8 @@ def home (request):
         context.update({'money': money})
     except:
         pass    
-    #messages.success(request,'Merry Christmas. We will be back on Monday')
-    #messages.success(request,'Niedziela: Rosół z makaronem - Schab z grilla z pieczarkami, ziemniaki, kalafior z bułeczką tartą')
+    #messages.warning(request,'On Sunday 14MAY2023 restaurant will be closed')
+    #messages.warning(request,'Top-ups after 8:30 a.m. will not be accepted')
     return render(request, 'shop/home.html',context)
 
 def about (request):

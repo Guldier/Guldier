@@ -1,7 +1,12 @@
-from openpyxl import Workbook, load_workbook
+
 import random
 import smtplib, ssl
 
+#from exchangelib import Configuration, Account, DELEGATE
+#from exchangelib import Message, Mailbox, Credentials
+#from exchangelib import Account, Credentials, Message, Mailbox, ServiceAccount, DELEGATE
+#from config import cfg
+from email.message import EmailMessage
 from email import encoders
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -18,6 +23,7 @@ from .models import (
     Orders,
     WeekDish
 )
+
 
 def create_list():
     today = datetime.today()
@@ -47,159 +53,66 @@ def create_list():
 
     message += f'\nŁącznie do zapłaty: {money}zł\n'
     message += '\nPozdrawiamy\nLinetech'
+
+    print(message)
     
     send_mail(
         f'Lista obiadów {today.date()}',
         message,
         None,
-        ['biuro@hotel-trzykorony.pl','damian.jadacki@linetech.pl','bartosz.wrobel@linetech.pl','lukasz.magda@linetech.pl'],
+        ['biuro@hotel-trzykorony.pl','damian.jadacki@linetech.pl','michal.oszajca@linetech.pl','michal.borkowski@linetech.pl'],
         fail_silently=False,
     )
 
-def create_list_rep():
-    today = datetime.today()
-    today_orders=Orders.objects.filter(order_date__date=today.date())
-    composition_list = {}
-
-    for food in today_orders:
-        if food.user.is_stuff:
-            if food.composition in composition_list:
-                composition_list[food.composition] = composition_list.get(food.composition,0) + food.quantity
-            else:
-                composition_list[food.composition] = food.quantity
-    
-    message = 'Pani Zosiu,\n'
-    message += 'Zamówienie:\n'
-
-    for key in composition_list:
-        message += f'{key} x {composition_list[key]}\n'
-
-    message += '\nOsoby zamawiające\n'
-
-    for orders in today_orders:
-        message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
-
-    send_mail(
-        f'Lista obiadów rep {today.date()}',
-        message,
-        None,
-        ['damian.jadacki@linetech.pl'],
-        fail_silently=False,
-    )
-
-def five_s():
-    my_host = 'linetech.nazwa.pl'
-    my_port = 587 
-    my_username = 'damian.jadacki@linetech.pl'
-    my_password = 'Dddddjjjjj12#$'
-    my_use_tls = False
-    my_use_ssl = False
-    connection = get_connection(
-        host=my_host,
-        port=my_port,
-        username=my_username,
-        password=my_password,
-        use_tls=my_use_tls,
-        use_ssl=my_use_ssl)
-    pracownicy = ['DAMIAN JADACKI', 'MICHAŁ GRĘBOSZ', 'BARTOSZ WRÓBEL', 'ŁUKASZ MAGDA']
-    dzis = datetime.today()
-    workbook = load_workbook(filename="/home/guldier/5S/5S RZE Engineering November 2020 (W46) 10.11.2020.xlsx")
-    sheetnames = workbook.sheetnames
-    sheet1 = workbook[sheetnames[0]]
-    sheet2 = workbook[sheetnames[1]]
-    sheet1["C6"].value = dzis.strftime("%B") + f' {dzis.strftime("%Y")} (W{dzis.isocalendar()[1]}) {dzis.strftime("%d")}.{dzis.strftime("%m")}.{dzis.strftime("%Y")}'
-    sheet1["C12"].value = f'ENG / {pracownicy[random.randint(0,3)]}'
-    losuj_dalej = True
-    suma_pkt = 0
-    while losuj_dalej:
-        suma_pkt = 0
-        for i in range(17,22):
-            sheet1[f"I{i}"].value = random.randint(4,5)
-            suma_pkt += sheet1[f"I{i}"].value
-
-        for i in range(25,30):
-            sheet1[f"I{i}"].value = random.randint(4,5)
-            suma_pkt += sheet1[f"I{i}"].value
-
-        for i in range(33,38):
-            sheet1[f"I{i}"].value = random.randint(4,5)
-            suma_pkt += sheet1[f"I{i}"].value
-
-        for i in range(41,46):
-            sheet1[f"I{i}"].value = random.randint(4,5)
-            suma_pkt += sheet1[f"I{i}"].value
-
-        for i in range(49,53):
-            sheet1[f"I{i}"].value = random.randint(4,5)
-            suma_pkt += sheet1[f"I{i}"].value
-
-        if sheet1["C12"].value == f'ENG / {pracownicy[1]}':
-            sheet1["I53"].value = 3
-        else:
-            sheet1["I53"].value = 1
-    
-        suma_pkt += sheet1["I53"].value
-        if suma_pkt >= 119:
-            losuj_dalej = False
-        else:
-            suma_pkt = 0
-
-    free_column = 0
-    free_row = 0
-    for i in range(5,24):
-        if sheet2.cell(row=31,column=i).value == None:
-            free_column = i
-            break
-    if free_column == 0:
-        for i in range(5,24):
-            if sheet2.cell(row=33, column=i).value == None:
-                free_column = i
-                break
-        sheet2.cell(row=33, column=free_column).value = dzis.date()
-        sheet2.cell(row=34, column=free_column).value = suma_pkt
-    else:
-        sheet2.cell(row=31, column=free_column).value = dzis.date()
-        sheet2.cell(row=32, column=free_column).value = suma_pkt
-    filename_excel = f'5S RZE Engineering {dzis.strftime("%B")} {dzis.strftime("%Y")} (W{dzis.isocalendar()[1]}) {dzis.strftime("%d")}.{dzis.strftime("%m")}.{dzis.strftime("%Y")}.xlsx'
-    workbook.save(filename=f'/home/guldier/5S/{filename_excel}')
 
 
-    msg = MIMEMultipart("alternative")
-    msg['Subject'] = '5S'
-    msg['From'] = 'damian.jadacki@linetech.pl'
-    msg['To'] = 'bartosz.wrobel@linetech.pl'
+def ar_status():
 
-    text = f'Dear Roney,\nPlease find 5S report for {dzis.strftime("%d")}.{dzis.strftime("%m")}.{dzis.strftime("%Y")}'
+    sender = 'engineering@linetechpolska.pl'
+    reciever = ['checkleaders@linetech.pl','planning.rze@linetech.pl','logistic.rze@linetech.pl','rafal.komaniecki@linetech.pl','engineering.rze@linetech.pl','tariq.albraikat@linetech.pl']
+    password = 'JYG8$*$<N@'
 
-    msg.attach(MIMEText(text, "plain"))
+    ac_reg = ['D-AIBL']
+    link = ['https://linetech365-my.sharepoint.com/:x:/g/personal/rbozek_linetech_com_pl/ERDx-z2DoANEn24fhMVAPHQBpYMFPdiAOTJJ3RmQOAuYxg?e=cA5svR']
+ 
+    for i in range(len(ac_reg)):
+        msg = MIMEMultipart("alternative")
+        msg['Subject'] = f'{ac_reg[i]} all OEM cases: AR list {datetime.today().date()}'
+        msg['From'] = 'engineering.rze@linetech.pl'
+        msg['To'] = ", ".join(reciever)
 
-    html = """\
-    <!DOCTYPE html>
-    <html lang = "pl-PL">
-        <head>
-            <meta http - equiv ="Content-Language" content ="pl">
-            <meta charset = "UTF-8">
-        </head>
-        <body>
-            <style>
-            table {font-family: Segoe UI,sans-serif;background: transparent;}
-            p.a {font-size: 14px; color:#482960;}
-            p.b {font-size: 11px; color:#482960;}
-            p.c {font-size: 11px; color:#737373;}
-            p.rodo {font-size: 8px; color:#737373; text-align: justify;};
-            a:link {font-size: 11px; text-decoration: none; color: #737373;}
-            a:visited {font-size: 11px; text-decoration: none; color: #737373;}
-            a:active {font-size: 11px; text-decoration: none; color: #737373;}
-            a:hover {font-size: 11px; text-decoration: none; color: #737373;}
-            tbody.a {background: transparent;background-color:transparent}
-            </style>
-            <table width = "600" cellspacing="0" cellpadding = "0 " border = "0 ">
-                <tbody class="a">
-                    <tr>
-                        <td>
-                            <p class="a"><b> Damian Jadacki |</b> Engineer</p>
-                        </td>
-                        <td rowspan="2">
+        message = f"""\
+        Hi everyone, <br> 
+        Please see attached <a href="{link[i]}"> AR LIST </a>
+        for {ac_reg[i]} {datetime.today().date()}"""
+
+        html = """\
+        <!DOCTYPE html>
+        <html lang = "pl-PL">
+            <head>
+                <meta http - equiv ="Content-Language" content ="pl">
+                <meta charset = "UTF-8">
+            </head>
+            <body>
+                <style>
+                table {font-family: Segoe UI,sans-serif;background: transparent;}
+                p.a {font-size: 14px; color:#482960;}
+                p.b {font-size: 11px; color:#482960;}
+                p.c {font-size: 11px; color:#737373;}
+                p.rodo {font-size: 8px; color:#737373; text-align: justify;};
+                a:link {font-size: 11px; text-decoration: none; color: #737373;}
+                a:visited {font-size: 11px; text-decoration: none; color: #737373;}
+                a:active {font-size: 11px; text-decoration: none; color: #737373;}
+                a:hover {font-size: 11px; text-decoration: none; color: #737373;}
+                tbody.a {background: transparent;background-color:transparent}
+                </style>
+                <table width = "600" cellspacing="0" cellpadding = "0 " border = "0 ">
+                    <tbody class="a">
+                        <tr>
+                            <td>
+                                <p class="a"><b> Damian Jadacki |</b> Engineer</p>
+                            </td>
+                            <td rowspan="2">
 
                         </td>
                         <td  colspan= "5" rowspan="2">
@@ -281,42 +194,21 @@ def five_s():
             </table>
         </body>
     </html>
-    """.format(table_html=table_html)
+    """
+#.format(table_html=table_html)
 
-    msg.attach(MIMEText(html, "html"))
+        message += html
 
-    with open('/home/guldier/5S/IMG_3622.JPG',"rb") as attachent:
-        picture = MIMEBase("application","octet-stream")
-        picture.set_payload(attachent.read())
+        part1 = MIMEText(message, "html")
 
-    encoders.encode_base64(picture)
-    
-    picture.add_header(
-        "Content-Disposition",
-        'attachment',
-         filename='picture.JPG'
-    )
+        msg.attach(part1)
 
-    connection.open()
-    
-
-    #msg = EmailMessage(
-    #    '5S',
-    #    f'Czy to działa?\n {signature.as_string()}',
-    #    'damian.jadacki@linetech.pl',
-    #    ['bartosz.wrobel@linetech.pl'],
-    #    connection=connection)
-
-    #msg.attach_file('/home/guldier/5S/IMG_3622.JPG')
-    #msg.attach_file(f'/home/guldier/5S/{filename_excel}')
-    #msg.attach(part1)
-    #msg.attach(signature)
-    msg.attach(picture)
-
-    context = ssl.create_default_context()
-    with  smtplib.SMTP_SSL('linetech.nazwa.pl', 587, context=context) as s:
-        s.login('damian.jadacki@linetech.pl','Dddddjjjjj12#$')
-        s.sendmail('damian.jadacki@linetech.pl', 'bartosz.wrobel@linetech.pl', msg.as_string())
-        s.quit()
-    # msg.send()
-    #connection.close()
+        ip = '192.168.17.135'
+        context = ssl.create_default_context()
+        weekday = datetime.today().weekday()
+        if weekday < 5:
+            server = smtplib.SMTP('192.168.17.135')
+            server.login(sender, password)
+            server.sendmail(sender, reciever, msg.as_string())
+        else:
+            pass
