@@ -47,7 +47,7 @@ def create_list():
     for orders in today_orders:
         message += f'{orders.user} - {orders.composition} - {orders.quantity}szt.\n'
         if orders.composition.dish.dish_type == 'special' and orders.composition.dish.price == 20:
-            money += ((orders.composition.dish.price - 2) + orders.composition.addon.price) * orders.quantity
+            money += ((orders.composition.dish.price - 1) + orders.composition.addon.price) * orders.quantity
         else:
             money += ((orders.composition.dish.price - 1) + orders.composition.addon.price) * orders.quantity
 
@@ -72,8 +72,8 @@ def ar_status():
     reciever = ['checkleaders@linetech.pl','planning.rze@linetech.pl','logistic.rze@linetech.pl','rafal.komaniecki@linetech.pl','engineering.rze@linetech.pl','tariq.albraikat@linetech.pl']
     password = 'JYG8$*$<N@'
 
-    ac_reg = ['D-AIBL']
-    link = ['https://linetech365-my.sharepoint.com/:x:/g/personal/rbozek_linetech_com_pl/ERDx-z2DoANEn24fhMVAPHQBpYMFPdiAOTJJ3RmQOAuYxg?e=cA5svR']
+    ac_reg = ['OE-LQN','9H-IHL']
+    link = ['https://linetech365-my.sharepoint.com/:x:/g/personal/rbozek_linetech_com_pl/Efow5a0LNDNBiiDLdGZ6fI8BYRR40z_14eUZtb-m54hGIQ?e=9thNkQ','https://linetech365-my.sharepoint.com/:x:/g/personal/djadacki_linetech_com_pl/EXCE7RGtlQhDqvSvKXXFj8IBPSmYDWXYYz3DKnvoLFIThA']
  
     for i in range(len(ac_reg)):
         msg = MIMEMultipart("alternative")
@@ -84,7 +84,7 @@ def ar_status():
         message = f"""\
         Hi everyone, <br> 
         Please see attached <a href="{link[i]}"> AR LIST </a>
-        for {ac_reg[i]} {datetime.today().date()}"""
+        for {ac_reg[i]} {datetime.today().date()} . <br>"""
 
         html = """\
         <!DOCTYPE html>
