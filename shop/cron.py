@@ -72,8 +72,8 @@ def ar_status():
     reciever = ['checkleaders@linetech.pl','planning.rze@linetech.pl','logistic.rze@linetech.pl','rafal.komaniecki@linetech.pl','engineering.rze@linetech.pl','tariq.albraikat@linetech.pl']
     password = 'JYG8$*$<N@'
 
-    ac_reg = ['OE-LQN','9H-IHL']
-    link = ['https://linetech365-my.sharepoint.com/:x:/g/personal/rbozek_linetech_com_pl/Efow5a0LNDNBiiDLdGZ6fI8BYRR40z_14eUZtb-m54hGIQ?e=9thNkQ','https://linetech365-my.sharepoint.com/:x:/g/personal/djadacki_linetech_com_pl/EXCE7RGtlQhDqvSvKXXFj8IBPSmYDWXYYz3DKnvoLFIThA']
+    ac_reg = ['9H-QCT','EI-GSI','D-AILW']
+    link = ['https://linetech365-my.sharepoint.com/:x:/g/personal/djadacki_linetech_com_pl/EXFiHXIHn1tKrDm-UkLl0OwBPKVr-J_e4W-xYRK3SPX_Fw?e=L3VDxb','https://linetech365-my.sharepoint.com/:x:/g/personal/djadacki_linetech_com_pl/Eapqhn6djr1Jok8Xe0KGloUBUw8kfu4YCpG-J3vczi6g8Q?e=wi3eXL','https://linetech365-my.sharepoint.com/:x:/g/personal/djadacki_linetech_com_pl/EUQYI93_S4lBtxKgCl2ii4oBXjCyHtNDDeZvh9y-QbsR-g?e=CCw5Ge']
  
     for i in range(len(ac_reg)):
         msg = MIMEMultipart("alternative")
